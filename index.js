@@ -64,6 +64,7 @@ app.use("/api/v1/products", require("./routes/products"));
 app.use("/api/v1/bids", require("./routes/bids"));
 app.use("/api/v1/storage", require("./routes/storage"));
 app.use("/api/v1/categories", require("./routes/categories"));
+app.use("/api/v1/tags", require("./routes/tags"));
 app.use("/api/v1/invoice", require("./routes/invoice"));
 app.use("/api/v1/cart", require("./routes/cart"));
 app.use("/api/v1/support", require("./routes/support"));
