@@ -69,6 +69,7 @@ app.use("/api/v1/invoice", require("./routes/invoice"));
 app.use("/api/v1/cart", require("./routes/cart"));
 app.use("/api/v1/support", require("./routes/support"));
 app.use("/api/v1/search", require("./routes/search"));
+app.use("/api/v1/profile", require("./routes/profile"));
 app.use("/api/v1/companies", require("./routes/companies"));
 
 app.listen(PORT, () => {

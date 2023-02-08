@@ -143,9 +143,7 @@ router.post("/company", async (req, res) => {
 router.post("/check", async (req, res) => {
   try {
     const token = req.cookies.token || req.headers["x-access-token"] || req.body.token;
-
-    console.log(token + "token");
-
+    
     if (!token) {
 
       //Verify token
