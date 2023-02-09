@@ -110,7 +110,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 //Get company profile
-router.get("/company", async (req, res) => {
+router.post("/company", async (req, res) => {
   const token =
     req.cookies.token || req.headers["x-access-token"] || req.body.token;
 
