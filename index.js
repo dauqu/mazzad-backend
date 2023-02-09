@@ -11,7 +11,7 @@ app.use(cookieParser());
 //Allow cors
 const cors = require("cors");
 //Loop of allowed origins
-const allowedOrigins = ["https://mazzad-admin-k1le.vercel.app", "http://localhost:3000", "https://admin-for-all.vercel.app", "https://companyadminpanel.vercel.app"];
+const allowedOrigins = ["https://mazzad-admin-k1le.vercel.app", "http://localhost:3000", "https://companyadminpanel.vercel.app"];
 
 app.use(
   cors({
