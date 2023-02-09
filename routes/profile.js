@@ -4,20 +4,41 @@ const admin = require("firebase-admin");
 const jwt = require("jsonwebtoken");
 
 router.post("/", (req, res) => {
-  const db = admin.firestore();
-  const profileCollection = db.collection("profile");
+  try {
+    const db = admin.firestore();
+    const profileCollection = db.collection("profile");
+    const userId=req.body.user_id;
 
-  //Add new profile to the collection
-  profileCollection.add({
-    name: req.body.name,
-    description: req.body.description,
-    createdAt: new Date().toISOString(),
-  });
+    //Add new profile to the collection
+    profileCollection.add({
+      user: userId,
+      name: req.body.name,
+      description: req.body.description,
+      country: req.body.country,
+      city: req.body.city,
+      google_map: req.body.google_map,
+      licence_number: req.body.licence_number,
+      licence_doc: req.body.licence_doc,
+      company_owner: req.body.company_owner,
+      username: req.body.username,
+      role: req.body.role,
+      email: req.body.email,
+      mobile: req.body.mobile,
+      signature: req.body.stamp,
+      stamp: req.body.stamp,
+      createdAt: new Date().toISOString(),
+    });
 
-  //Send response
-  res.status(200).send({
-    message: "Profile added successfully",
-  });
+    //Send response
+    res.status(200).send({
+      message: "Profile added successfully",
+    });
+  } catch (error) {
+    res.json({
+      message: error.message,
+      status: "error"
+    })
+  }
 });
 
 //Read all profiles
@@ -29,9 +50,7 @@ router.get("/", async (req, res) => {
   profile.forEach((doc) => {
     profileArray.push({
       id: doc.id,
-      name: doc.data().name,
-      description: doc.data().description,
-      createdAt: doc.data().createdAt,
+      ...doc.data(),
     });
   });
   res.status(200).send(profileArray);
@@ -49,9 +68,7 @@ router.get("/:id", async (req, res) => {
   } else {
     res.status(200).send({
       id: profile.id,
-      name: profile.data().name,
-      description: profile.data().description,
-      createdAt: profile.data().createdAt,
+      ...profile.data()
     });
   }
 });
@@ -67,8 +84,7 @@ router.put("/:id", async (req, res) => {
     });
   } else {
     await profileCollection.doc(req.params.id).update({
-      name: req.body.name,
-      description: req.body.description,
+      ...req.body
     });
     res.status(200).send({
       message: "Profile updated successfully",
