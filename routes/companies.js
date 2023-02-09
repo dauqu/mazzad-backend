@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
     password: hashedpass,
     tags: req.body.tags,
     featured_image: req.body.featured_image,
-    digoital_signature: req.body.digoital_signature,
+    digital_signature: req.body.digital_signature,
     status: "pending",
     isVerified: false,
     createAt: new Date().toISOString(),

@@ -126,7 +126,7 @@ router.post("/company", async (req, res) => {
         res.header("x-access-token", token);
 
         res.status(200).send({
-          message: "User logged in successfully",
+          message: "Company logged in successfully",
           token: token,
         });
       } else {
