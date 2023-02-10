@@ -63,30 +63,46 @@ router.post("/", async (req, res) => {
 
 //Update a company
 router.put("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
-  const company = await companiesCollection.doc(req.params.id).get();
-  if (!company.exists) {
-    res.status(404).send("Company not found");
-  } else {
-    await companiesCollection.doc(req.params.id).update({
-      name: req.body.name,
-      description: req.body.description,
+
+  try {
+
+    const db = admin.firestore();
+    const companiesCollection = db.collection("companies");
+    const company = await companiesCollection.doc(req.params.id).get();
+    if (!company.exists) {
+      res.status(404).send("Company not found");
+    } else {
+      await companiesCollection.doc(req.params.id).update({
+        ...req.body,
+      });
+      res.status(203).json({
+        message: "Company updated successfully",
+        status: "success"
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      status: "error"
     });
-    res.status(204).send();
   }
 });
 
 //Delete a company
 router.delete("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
-  const company = await companiesCollection.doc(req.params.id).get();
-  if (!company.exists) {
-    res.status(404).send("Company not found");
-  } else {
-    await companiesCollection.doc(req.params.id).delete();
-    res.status(204).send();
+  try {
+
+    const db = admin.firestore();
+    const companiesCollection = db.collection("companies");
+    const company = await companiesCollection.doc(req.params.id).get();
+    if (!company.exists) {
+      return res.status(404).json({ message: "Company not found" });
+    } else {
+      await companiesCollection.doc(req.params.id).delete();
+      res.status(204).json({ message: "Company deleted successfully." });
+    }
+  } catch (error) {
+    return res.status(504).json({ message: error.message });
   }
 });
 
