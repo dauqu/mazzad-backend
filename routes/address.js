@@ -27,21 +27,16 @@ router.get("/", async (req, res) => {
 
   //Get address by username
   const snapshot = await addressCollection
-    .where("username", "==", username)
+    .where("createdBy", "==", username)
     .get();
-  //Check if address exists
-  if (snapshot.empty) {
-    res.status(404).send({
-      message: "No address found",
-    });
-  } else {
-    snapshot.forEach((doc) => {
-      res.json({
-        id: doc.id,
-        ...doc.data(),
-      });
-    });
-  }
+  const addressArray = [];
+  snapshot.forEach((doc) => {
+    addressArray.push({
+      id: doc.id,
+      ...doc.data(),
+    }); //Get all address
+  });
+  res.status(200).send(addressArray);
 });
 
 //Get a address

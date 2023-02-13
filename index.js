@@ -53,6 +53,8 @@ app.use("/api/v1/auctions", require("./routes/auctions"));
 app.use("/api/v1/bids", require("./routes/bids"));
 app.use("/api/v1/address", require("./routes/address"));
 
+app.use("/api/v1/account", require("./routes/bank-accounts"));
+
 app.use("/api/v1/storage", require("./routes/storage"));
 app.use("/api/v1/categories", require("./routes/categories"));
 app.use("/api/v1/tags", require("./routes/tags"));
