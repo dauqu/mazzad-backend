@@ -8,14 +8,14 @@ const auctionCollection = db.collection("auctions");
 
 //Create Auction (POST)
 router.post("/", (req, res) => {
-  const token =
-    req.cookies.token || req.headers["x-access-token"] || req.body.token;
+//   const token =
+//     req.cookies.token || req.headers["x-access-token"] || req.body.token;
 
-  if (!token) {
-    res.status(401).send({
-      message: "No token provided",
-    });
-  }
+//   if (!token) {
+//     res.status(401).send({
+//       message: "No token provided",
+//     });
+//   }
 
   //Verify JWT token
   // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
