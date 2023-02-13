@@ -1,0 +1,41 @@
+
+
+Tags  
+    id 
+    name 
+    description
+    create_at
+
+Users 
+    id 
+    fulle_name
+    phone
+    username
+    email 
+    password 
+    created_at
+
+Address 
+       id 
+       first_address
+       sec_address
+       state 
+       country 
+       zip_code
+       city 
+       added_by
+       created_at 
+
+Company 
+        id 
+        name 
+        description
+        tags => tags_id
+        category 
+        company_owner => user_id
+        digital_signature
+        featured_image 
+        gst 
+        is_verified
+        company_address => address_id
+        created_at 

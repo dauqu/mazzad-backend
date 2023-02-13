@@ -75,8 +75,6 @@ router.get("/:id", async (req, res) => {
 //Update a bid
 router.put("/:id", async (req, res) => {
     try {
-
-
         const db = admin.firestore();
         const bidsCollection = db.collection("bids");
         const bid = await bidsCollection.doc(req.params.id).get();

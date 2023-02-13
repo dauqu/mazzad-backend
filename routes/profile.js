@@ -143,4 +143,7 @@ router.post("/company", async (req, res) => {
   });
 });
 
+
+//Get my company profile
+
 module.exports = router;
