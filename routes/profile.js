@@ -29,14 +29,12 @@ router.get("/", async (req, res) => {
     const snapshot = await profileCollection
       .where("username", "==", username)
       .get();
-    const data = [];
     snapshot.forEach((doc) => {
-      data.push({
+      res.json({
         id: doc.id,
         ...doc.data(),
       });
     });
-    res.json(data);
   } catch (error) {
     res.send(error);
   }
