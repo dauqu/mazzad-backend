@@ -6,12 +6,30 @@ const jwt = require("jsonwebtoken");
 const db = admin.firestore();
 const adsCollection = db.collection("advertisement");
 
+const VerifyToken = require("../functions/verify-token");
+
 //Create Auction (POST)
 router.post("/", (req, res) => {
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
   //Create new auction
   adsCollection.add({
     ...req.body,
-    createdBy: "harsha",
+    createdBy: username,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -34,6 +52,46 @@ router.get("/", (req, res) => {
           ...doc.data(),
         });
       });
+      return res.status(200).json(ads);
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        error: err.code,
+      });
+    });
+});
+
+//Get my ads (GET)
+router.get("/my-ads", (req, res) => {
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  adsCollection
+    .where("createdBy", "==", username)
+    .get()
+    .then((data) => {
+      let ads = [];
+      data.forEach((doc) => {
+        ads.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
       return res.status(200).json(ads);
     })
     .catch((err) => {
