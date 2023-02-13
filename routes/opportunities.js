@@ -8,8 +8,10 @@ router.get('/', async (req, res) => {
         const opportunities = await db.collection('opportunities').get();
         const opportunitiesArray = [];
         opportunities.forEach((doc) => {
-            id: doc.id,
-            opportunitiesArray.push(doc.data());
+            opportunitiesArray.push({
+                id: doc.id,
+                ...doc.data()
+            });
         });
 
         res.status(200).json(opportunitiesArray);
