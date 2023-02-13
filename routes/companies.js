@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const bcrypt = require('bcryptjs')
+const bcrypt = require("bcryptjs");
 
 //Get all companies from the collection companies
 router.get("/", async (req, res) => {
@@ -35,24 +35,7 @@ router.post("/", async (req, res) => {
   let hashedpass = await bcrypt.hash(req.body.password, 8);
 
   const company = await companiesCollection.add({
-    name: req.body.name,
-    title: req.body.title,
-    description: req.body.description,
-    address: req.body.address,
-    phone: req.body.phone,
-    email: req.body.email,
-    gst: req.body.gst,
-    company_owner: req.body.company_owner,
-    category: req.body.category,
-    contact_email: req.body.contact_email,
-    contact_phone: req.body.contact_phone,
-    contact_name: req.body.contact_name,
-    password: hashedpass,
-    tags: req.body.tags,
-    featured_image: req.body.featured_image,
-    digital_signature: req.body.digital_signature,
-    status: "pending",
-    isVerified: false,
+    ...req.body,
     createAt: new Date().toISOString(),
     updateAt: new Date().toISOString(),
   });
@@ -63,9 +46,7 @@ router.post("/", async (req, res) => {
 
 //Update a company
 router.put("/:id", async (req, res) => {
-
   try {
-
     const db = admin.firestore();
     const companiesCollection = db.collection("companies");
     const company = await companiesCollection.doc(req.params.id).get();
@@ -77,13 +58,13 @@ router.put("/:id", async (req, res) => {
       });
       res.status(203).json({
         message: "Company updated successfully",
-        status: "success"
+        status: "success",
       });
     }
   } catch (error) {
     res.status(500).json({
       message: error.message,
-      status: "error"
+      status: "error",
     });
   }
 });
@@ -91,7 +72,6 @@ router.put("/:id", async (req, res) => {
 //Delete a company
 router.delete("/:id", async (req, res) => {
   try {
-
     const db = admin.firestore();
     const companiesCollection = db.collection("companies");
     const company = await companiesCollection.doc(req.params.id).get();
