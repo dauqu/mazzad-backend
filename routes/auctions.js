@@ -23,8 +23,19 @@ router.post("/", (req, res) => {
 
   //Check if no token
   const verified = VerifyToken(token);
+  if (!verified) {
+    return res.status(401).send({
+      message: "Invalid token",
+    });
+  }
 
   const username = verified.username;
+  if (!username) {
+    return res.status(401).send({
+      message: "Invalid Username",
+    });
+  }
+
 
   //Create new auction
   auctionCollection.add({
@@ -33,7 +44,7 @@ router.post("/", (req, res) => {
     currency: req.body.currency,
     description: req.body.description,
     minimal_step: req.body.minimal_step,
-    token: req.body.token,
+    tkn: req.body.tkn,
     items: req.body.items,
     type: req.body.type,
     contract: req.body.contract,
