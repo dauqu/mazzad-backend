@@ -54,6 +54,7 @@ app.use("/api/v1/bids", require("./routes/bids"));
 app.use("/api/v1/address", require("./routes/address"));
 
 app.use("/api/v1/account", require("./routes/bank-accounts"));
+app.use("/api/v1/opportunities", require("./routes/opportunities"));
 
 app.use("/api/v1/storage", require("./routes/storage"));
 app.use("/api/v1/categories", require("./routes/categories"));
