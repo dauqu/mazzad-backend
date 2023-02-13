@@ -101,8 +101,7 @@ router.post("/", async (req, res) => {
 
   try {
     const bankAccount = {
-      name: req.body.name,
-      balance: req.body.balance,
+    
       createdBy: username,
     };
     const newBankAccount = await admin
