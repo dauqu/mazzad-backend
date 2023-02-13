@@ -38,6 +38,22 @@ router.post("/", Middleware, (req, res) => {
 });
 
 async function Middleware(req, res, next) {
+  //Check all fields are filled
+  if (
+    !req.body.fullName ||
+    !req.body.logo ||
+    !req.body.username ||
+    !req.body.email ||
+    !req.body.phone ||
+    !req.body.country ||
+    !req.body.google_map ||
+    !req.body.password
+  ) {
+    res.status(400).send({
+      message: "All fields are required",
+    });
+  }
+
   const db = admin.firestore();
   const usersCollection = db.collection("users");
   const user = await usersCollection.where("email", "==", req.body.email).get();

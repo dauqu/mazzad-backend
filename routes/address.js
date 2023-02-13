@@ -1,28 +1,44 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
+
 const db = admin.firestore();
-const slugify = require("slugify");
+const addressCollection = db.collection("address");
+
+const VerifyToken = require("../functions/verify-token");
 
 //Get all address
 router.get("/", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("address");
-  const address = await addressCollection.get();
-  const addressArray = [];
-  address.forEach((doc) => {
-    addressArray.push({
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  //Get address by username
+  const snapshot = await addressCollection
+    .where("username", "==", username)
+    .get();
+  snapshot.forEach((doc) => {
+    res.json({
       id: doc.id,
       ...doc.data(),
     });
   });
-  res.status(200).send(addressArray);
 });
 
 //Get a address
 router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("address");
   const address = await addressCollection.doc(req.params.id).get();
   if (!address.exists) {
     res.status(404).send({
@@ -38,13 +54,26 @@ router.get("/:id", async (req, res) => {
 
 //Create a address
 router.post("/", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("address");
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
 
   //Add new address to the collection
   const addedAddress = await addressCollection.add({
     ...req.body,
-    createdBy: "harsha",
+    createdBy: username,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -61,8 +90,6 @@ router.post("/", async (req, res) => {
 //Update a address
 router.put("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
-    const addressCollection = db.collection("address");
     const address = await addressCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
@@ -85,8 +112,6 @@ router.put("/:id", async (req, res) => {
 //Delete a address
 router.delete("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
-    const addressCollection = db.collection("address");
     const address = await addressCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
@@ -102,6 +127,5 @@ router.delete("/:id", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
