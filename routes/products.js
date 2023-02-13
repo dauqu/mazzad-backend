@@ -7,13 +7,17 @@ const db = admin.firestore();
 const productsCollection = db.collection("products");
 
 router.get("/", async (req, res) => {
-  try {
-    const response = await productsCollection.get();
-    const products = response.docs.map((doc) => doc.data());
-    res.send(products);
-  } catch (error) {
-    res.send(error);
-  }
+  const db = admin.firestore();
+  const addressCollection = db.collection("products");
+  const address = await addressCollection.get();
+  const addressArray = [];
+  address.forEach((doc) => {
+    addressArray.push({
+      id: doc.id,
+      ...doc.data(),
+    });
+  });
+  res.status(200).send(addressArray);
 });
 
 router.post("/", (req, res) => {
