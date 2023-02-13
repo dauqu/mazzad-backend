@@ -8,14 +8,16 @@ const db = admin.firestore();
 const tagsCollection = db.collection("tags");
 
 router.post("/", async (req, res) => {
-  //Get token from header
-
+  try {
+    
+    //Get token from header
+    
   const token =
     req.body.token || req.cookies.token || req.headers["x-access-token"];
 
   //Return if no token
   if (!token) {
-    res.status(401).send({
+    return res.status(401).send({
       message: "No token provided",
     });
   }
@@ -24,7 +26,7 @@ router.post("/", async (req, res) => {
   const verified = VerifyToken(token);
 
   const username = verified.username;
-
+  
   //Add new category to the collection
   const addedTag = await tagsCollection.add({
     name: req.body.name,
@@ -34,24 +36,32 @@ router.post("/", async (req, res) => {
     updatedAt: new Date().toISOString(),
   });
   //Send response
-  res.status(200).send({
+  return res.status(200).send({
     message: "Tag added successfully",
     tag: {
       id: addedTag.id,
       ...(await addedTag.get()).data(),
     },
   });
+} catch (error) {
+  return res.status(500).json({
+    message: error.message,
+  });
+}
 });
 
 //Read all categories
 router.get("/", async (req, res) => {
   const tags = await tagsCollection.get();
-  tags.forEach((doc) => {
-    res.status(200).send({
+  let alltags = []
+  tags.forEach((doc) => 
+  {
+    alltags.push({
       id: doc.id,
       ...doc.data(),
     });
   });
+  res.status(200).json(alltags);
 });
 
 //Get my tags
