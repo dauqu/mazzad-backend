@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 4000;
-const fs = require("fs");
 
 //Import cookie parser
 const cookieParser = require("cookie-parser");
@@ -40,22 +39,8 @@ app.use(express.json());
 app.use(express.static(__dirname+"/"));
 
 app.get("/", (req, res) => {
-  //Read dir and return JSON
-  fs.readdir("./storage", (err, files) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json({
-        files: files,
-        files: files.map((file) => {
-          return {
-            name: file,
-            url: `https://saudi.dauqu.host/storage/${file}`,
-          };
-        }),
-      });
-    }
-  });
+  //Return Hello World
+  res.send("Hello World");
 });
 
 app.use("/api/v1/register", require("./routes/register"));

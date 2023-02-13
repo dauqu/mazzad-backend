@@ -3,6 +3,28 @@ const router = express.Router();
 var fs = require("fs");
 const slugify = require("slugify");
 
+
+router.use(express.static(__dirname+"/"));
+
+router.get("/", async (req, res) => {
+  //Read dir and return JSON
+  fs.readdir(__dirname+"/../storage", (err, files) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json({
+        files: files,
+        files: files.map((file) => {
+          return {
+            name: file,
+            url: `https://saudi.dauqu.host/storage/${file}`,
+          };
+        }),
+      });
+    }
+  });
+});
+
 //Upload File
 router.post("/", async (req, res) => {
   try {
@@ -28,7 +50,9 @@ router.post("/", async (req, res) => {
       res.send({
         status: "success",
         message: "File successfully uploaded",
-        file_name: `${req.protocol}://${req.get("host")}/storage/${uploadedFile.name}`,
+        file_name: `${req.protocol}://${req.get("host")}/storage/${
+          uploadedFile.name
+        }`,
       });
     }
   } catch (err) {

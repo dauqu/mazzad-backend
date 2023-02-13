@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 var admin = require("firebase-admin");
-//JSOn web token 
+//JSOn web token
 const jwt = require("jsonwebtoken");
 const db = admin.firestore();
 bcrypt = require("bcryptjs");
-
 
 // //Get all documents JSON
 router.get("/", async (req, res) => {
@@ -41,7 +40,10 @@ router.post("/", async (req, res) => {
     }
     snapshot.forEach((doc) => {
       const user = doc.data();
-      const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+      const passwordIsValid = bcrypt.compareSync(
+        req.body.password,
+        user.password
+      );
       console.log(passwordIsValid);
       if (passwordIsValid !== false) {
         //Generate token
@@ -82,13 +84,11 @@ router.post("/", async (req, res) => {
   }
 });
 
-
-
 //company user
 router.post("/company", async (req, res) => {
   try {
     const companyRef = db.collection("companies");
-    const {email, password} = req.body;
+    const { email, password } = req.body;
     const snapshot = await companyRef.where("email", "==", email).get();
 
     if (snapshot.empty) {
@@ -142,10 +142,10 @@ router.post("/company", async (req, res) => {
 //Check if user is logged in
 router.post("/check", async (req, res) => {
   try {
-    const token = req.cookies.token || req.headers["x-access-token"] || req.body.token;
-    
-    if (!token) {
+    const token =
+      req.cookies.token || req.headers["x-access-token"] || req.body.token;
 
+    if (!token) {
       //Verify token
       jwt.verify(token, "secret", (err) => {
         if (err) {
@@ -162,7 +162,7 @@ router.post("/check", async (req, res) => {
       });
     }
   } catch (error) {
-    res.send
+    res.send;
   }
 });
 

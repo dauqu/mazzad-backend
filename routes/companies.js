@@ -7,7 +7,7 @@ const slugify = require("slugify");
 //Get all address
 router.get("/", async (req, res) => {
   const db = admin.firestore();
-  const addressCollection = db.collection("company");
+  const addressCollection = db.collection("companies");
   const address = await addressCollection.get();
   const addressArray = [];
   address.forEach((doc) => {
@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 //Get a address
 router.get("/:id", async (req, res) => {
   const db = admin.firestore();
-  const addressCollection = db.collection("company");
+  const addressCollection = db.collection("companies");
   const address = await addressCollection.doc(req.params.id).get();
   if (!address.exists) {
     res.status(404).send({
@@ -39,7 +39,7 @@ router.get("/:id", async (req, res) => {
 //Create a address
 router.post("/", async (req, res) => {
   const db = admin.firestore();
-  const addressCollection = db.collection("company");
+  const addressCollection = db.collection("companies");
 
   //Add new address to the collection
   const addedAddress = await addressCollection.add({
@@ -62,7 +62,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const db = admin.firestore();
-    const addressCollection = db.collection("company");
+    const addressCollection = db.collection("companies");
     const address = await addressCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
@@ -86,7 +86,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const db = admin.firestore();
-    const addressCollection = db.collection("company");
+    const addressCollection = db.collection("companies");
     const address = await addressCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
@@ -102,6 +102,5 @@ router.delete("/:id", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;

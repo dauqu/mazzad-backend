@@ -79,7 +79,7 @@ router.put("/:id", async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       category: req.body.category,
-      video: req.body.video,  
+      video: req.body.video,
       video_thumbnail: req.body.video_thumbnail,
       gallery: req.body.gallery,
       tags: req.body.tags,
