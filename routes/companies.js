@@ -1,26 +1,48 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const bcrypt = require("bcryptjs");
+const db = admin.firestore();
+const slugify = require("slugify");
 
-//Get all companies from the collection companies
+//Get all address
 router.get("/", async (req, res) => {
   const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
-  const resp = await companiesCollection.get();
-  const companies = resp.docs.map((doc) => ({
-    id: doc.id,
-    data: doc.data(),
-  }));
-  res.status(200).send(companies);
+  const addressCollection = db.collection("company");
+  const address = await addressCollection.get();
+  const addressArray = [];
+  address.forEach((doc) => {
+    addressArray.push({
+      id: doc.id,
+      ...doc.data(),
+    });
+  });
+  res.status(200).send(addressArray);
 });
 
-//Create a company
+//Get a address
+router.get("/:id", async (req, res) => {
+  const db = admin.firestore();
+  const addressCollection = db.collection("company");
+  const address = await addressCollection.doc(req.params.id).get();
+  if (!address.exists) {
+    res.status(404).send({
+      message: "Company not found",
+    });
+  } else {
+    res.status(200).send({
+      id: address.id,
+      ...address.data(),
+    });
+  }
+});
+
+//Create a address
 router.post("/", async (req, res) => {
   const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
+  const addressCollection = db.collection("company");
 
-  const company = await companiesCollection.add({
+  //Add new address to the collection
+  const addedAddress = await addressCollection.add({
     name: req.body.name,
     description: req.body.description,
     address: req.body.address, //Address id
@@ -32,65 +54,62 @@ router.post("/", async (req, res) => {
     digital_signature: req.body.digital_signature,
     status: "pending",
     isVerified: false,
+    createdBy: "harsha",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
-  res.status(201).send({
-    id: company.id,
+  //Send response
+  res.status(200).send({
+    message: "Company added successfully",
+    address: {
+      id: addedAddress.id,
+      ...(await addedAddress.get()).data(),
+    },
   });
 });
 
-//Get a company by id
-router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
-  const company = await companiesCollection.doc(req.params.id).get();
-  if (!company.exists) {
-    res.status(404).send("Company not found");
-  } else {
-    res.status(200).send(company.data());
-  }
-});
-
-//Update a company
+//Update a address
 router.put("/:id", async (req, res) => {
   try {
     const db = admin.firestore();
-    const companiesCollection = db.collection("companies");
-    const company = await companiesCollection.doc(req.params.id).get();
-    if (!company.exists) {
-      res.status(404).send("Company not found");
+    const addressCollection = db.collection("company");
+    const address = await addressCollection.doc(req.params.id).get();
+    if (!address.exists) {
+      res.status(404).send({
+        message: "Company not found",
+      });
     } else {
-      await companiesCollection.doc(req.params.id).update({
+      await addressCollection.doc(req.params.id).update({
         ...req.body,
+        updatedAt: new Date().toISOString(),
       });
-      res.status(203).json({
-        message: "Company updated successfully",
-        status: "success",
-      });
+      res.status(200).json({});
     }
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-      status: "error",
+    res.status(500).send({
+      message: "Error updating company",
     });
   }
 });
 
-//Delete a company
+//Delete a address
 router.delete("/:id", async (req, res) => {
   try {
     const db = admin.firestore();
-    const companiesCollection = db.collection("companies");
-    const company = await companiesCollection.doc(req.params.id).get();
-    if (!company.exists) {
-      return res.status(404).json({ message: "Company not found" });
+    const addressCollection = db.collection("company");
+    const address = await addressCollection.doc(req.params.id).get();
+    if (!address.exists) {
+      res.status(404).send({
+        message: "Company not found",
+      });
     } else {
-      await companiesCollection.doc(req.params.id).delete();
-      res.status(204).json({ message: "Company deleted successfully." });
+      await addressCollection.doc(req.params.id).delete();
+      res.status(200).json({});
     }
   } catch (error) {
-    return res.status(504).json({ message: error.message });
+    res.status(500).send({
+      message: "Error deleting company",
+    });
   }
 });
 
