@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 4000;
-app.use(express.json());
 const fs = require("fs");
 
 //Import cookie parser
@@ -35,6 +34,8 @@ var admin = require("firebase-admin");
 admin.initializeApp({
   credential: admin.credential.cert(fire_auth),
 });
+
+app.use(express.json());
 
 app.use(express.static(__dirname+"/"));
 

@@ -43,17 +43,7 @@ router.post("/", async (req, res) => {
 
   //Add new address to the collection
   const addedAddress = await addressCollection.add({
-    name: req.body.name,
-    description: req.body.description,
-    address: req.body.address, //Address id
-    gst: req.body.gst,
-    company_owner: req.body.company_owner, //User id
-    category: req.body.category,
-    tags: req.body.tags, //Array of tags
-    featured_image: req.body.featured_image,
-    digital_signature: req.body.digital_signature,
-    status: "pending",
-    isVerified: false,
+    ...req.body,
     createdBy: "harsha",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -112,5 +102,6 @@ router.delete("/:id", async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
