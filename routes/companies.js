@@ -11,7 +11,7 @@ const companiesCollection = db.collection("companies");
 //Get all address
 router.get("/", async (req, res) => {
   const companies = await companiesCollection.get();
-  const companiesArray = [];
+  const companiesArray = []; 
   companies.forEach((doc) => {
     companiesArray.push({
       id: doc.id,
