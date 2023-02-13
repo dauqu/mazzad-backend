@@ -57,44 +57,63 @@ router.get("/my-products", async (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const db = admin.firestore();
-  const usersCollection = db.collection("products");
+  try {
 
-  //Generate slug with filter and replace spaces with dashes
-  const slug = slugify(req.body.title, {
-    replacement: "-",
-    remove: /[*+~.()'"!:@]/g,
-    lower: true,
-  });
 
-  //Generate Random product id
-  const productId =
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15);
+    const token = req.body.token || req.cookies.token || req.headers["x-access-token"];
+    const db = admin.firestore();
+    const usersCollection = db.collection("products");
 
-  //Generate Random number for SKU
-  const sku = Math.floor(Math.random() * 1000000);
+    //Generate slug with filter and replace spaces with dashes
+    const slug = slugify(req.body.title, {
+      replacement: "-",
+      remove: /[*+~.()'"!:@]/g,
+      lower: true,
+    });
 
-  //Insert a new document into the collection
-  usersCollection.doc(productId).set({
-    name: req.body.name,
-    description: req.body.description,
-    category: req.body.category,
-    sku: sku,
-    slug: slug,
-    video: req.body.video,
-    video_thumbnail: req.body.video_thumbnail,
-    gallery: req.body.gallery,
-    tags: req.body.tags,
-    createdBy: "admin",
-    productId: productId,
-    createdAt: new Date().toISOString(),
-  });
+    //Generate Random product id
+    const productId =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
-  //Send response
-  res.status(200).send({
-    message: "Product registered successfully",
-  });
+    //Generate Random number for SKU
+    const sku = Math.floor(Math.random() * 1000000);
+
+    const verify = VerifyToken(token);
+    if (!verify) {
+      return res.status(401).send({
+        message: "Invalid token",
+      });
+    }
+
+    const username = verify.username;
+
+    //Insert a new document into the collection
+    usersCollection.doc(productId).set({
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+      sku: sku,
+      slug: slug,
+      video: req.body.video,
+      video_thumbnail: req.body.video_thumbnail,
+      gallery: req.body.gallery,
+      tags: req.body.tags,
+      createdBy: username,
+      productId: productId,
+      createdAt: new Date().toISOString(),
+    });
+
+    //Send response
+    res.status(200).send({
+      message: "Product registered successfully",
+    });
+  } catch (error) {
+
+    return res.status(500).send({
+      message: error.message
+    });
+  }
 });
 
 //Get a product
