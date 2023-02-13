@@ -2,9 +2,28 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 
+const VerifyToken = require("../functions/verify-token");
+
+const db = admin.firestore();
+const bidsCollection = db.collection("bids");
+
 router.post("/", (req, res) => {
-  const db = admin.firestore();
-  const bidsCollection = db.collection("bids");
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
   try {
     //Add new bid to the collection
     bidsCollection.add({
@@ -14,9 +33,10 @@ router.post("/", (req, res) => {
       currency: req.body.currency,
       minimal_step: req.body.minimal_step,
       token: req.body.token,
-      createdAt: new Date().toISOString(),
       items: req.body.items,
       contract: req.body.contract,
+      createdBy: username,
+      createdAt: new Date().toISOString(),
     });
 
     //Send response
@@ -38,7 +58,43 @@ router.get("/", async (req, res) => {
     const bids = await bidsCollection.get();
 
     const bidsArray = [];
-    // const bidsArray = bids.docs.map(doc => doc.data());
+    bids.forEach((doc) => {
+      bidsArray.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+    res.status(200).json(bidsArray);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//Get my bids
+router.get("/mybids", async (req, res) => {
+  //Get token from header
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  try {
+    const db = admin.firestore();
+    const bidsCollection = db.collection("bids");
+    const bids = await bidsCollection.where("createdBy", "==", username).get();
+
+    const bidsArray = [];
     bids.forEach((doc) => {
       bidsArray.push({
         id: doc.id,

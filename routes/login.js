@@ -56,7 +56,8 @@ router.post("/", async (req, res) => {
           },
           "Harsh@Singh8576",
           {
-            expiresIn: "1h",
+            //Expire in a year
+            expiresIn: 31556926, 
           }
         );
 
@@ -93,7 +94,7 @@ router.post("/check", async (req, res) => {
 
     if (!token) {
       //Verify token
-      jwt.verify(token, "secret", (err) => {
+      jwt.verify(token, "Harsh@Singh8576", (err) => {
         if (err) {
           res.status(401).send({
             message: "User is not logged in",

@@ -3,12 +3,11 @@ const router = express.Router();
 var fs = require("fs");
 const slugify = require("slugify");
 
-
-router.use(express.static(__dirname+"/"));
+router.use(express.static(__dirname + "/"));
 
 router.get("/", async (req, res) => {
   //Read dir and return JSON
-  fs.readdir(__dirname+"/../storage", (err, files) => {
+  fs.readdir(__dirname + "/../storage", (err, files) => {
     if (err) {
       res.status(500).send(err);
     } else {
@@ -50,9 +49,7 @@ router.post("/", async (req, res) => {
       res.send({
         status: "success",
         message: "File successfully uploaded",
-        file_name: `${req.protocol}://${req.get("host")}/storage/${
-          slug
-        }`,
+        file_name: `${req.protocol}://${req.get("host")}/storage/${slug}`,
       });
     }
   } catch (err) {
