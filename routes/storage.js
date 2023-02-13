@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
         status: "success",
         message: "File successfully uploaded",
         file_name: `${req.protocol}://${req.get("host")}/storage/${
-          uploadedFile.name
+          slug
         }`,
       });
     }
