@@ -3,29 +3,28 @@ const router = express.Router();
 const admin = require("firebase-admin");
 const jwt = require("jsonwebtoken");
 
+const VerifyToken = require("../functions/verify-token");
+
 const db = admin.firestore();
 const auctionCollection = db.collection("auctions");
 
 //Create Auction (POST)
 router.post("/", (req, res) => {
-//   const token =
-//     req.cookies.token || req.headers["x-access-token"] || req.body.token;
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
 
-//   if (!token) {
-//     res.status(401).send({
-//       message: "No token provided",
-//     });
-//   }
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
 
-  //Verify JWT token
-  // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-  //     if (err) {
-  //         return res.status(401).send({
-  //             message: "Unauthorized",
-  //         });
-  //     }
-  //     req.userId = decoded.id;
-  // });
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
 
   //Create new auction
   auctionCollection.add({
@@ -38,7 +37,7 @@ router.post("/", (req, res) => {
     items: req.body.items,
     type: req.body.type,
     contract: req.body.contract,
-    createdBy: "harsha",
+    createdBy: username,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -49,19 +48,55 @@ router.post("/", (req, res) => {
   });
 });
 
-//Get all Auctions (GET)
 router.get("/", (req, res) => {
+  //Get all acutions (GET)
   auctionCollection
     .get()
     .then((data) => {
-      let auctions = [];
       data.forEach((doc) => {
-        auctions.push({
+        return res.status(200).json({
           id: doc.id,
           ...doc.data(),
         });
       });
-      return res.status(200).json(auctions);
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        error: err.code,
+      });
+    });
+});
+
+//Get all Auctions (GET)
+router.get("/my-auctions", (req, res) => {
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  //Get auctions by username
+  auctionCollection
+    .where("createdBy", "==", username)
+    .get()
+    .then((data) => {
+      data.forEach((doc) => {
+        return res.status(200).json({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
     })
     .catch((err) => {
       console.log(err);

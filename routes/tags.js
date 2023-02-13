@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 
-router.post("/", async (req, res) => {
-  const db = admin.firestore();
-  const categoriesCollection = db.collection("tags");
+const VerifyToken = require("../functions/verify-token");
 
+const db = admin.firestore();
+const tagsCollection = db.collection("tags");
+
+router.post("/", async (req, res) => {
   //Add new category to the collection
-  const addedTag = await categoriesCollection.add({
+  const addedTag = await tagsCollection.add({
     name: req.body.name,
     description: req.body.description,
     createdBy: "harsha",
@@ -20,31 +22,56 @@ router.post("/", async (req, res) => {
     tag: {
       id: addedTag.id,
       ...(await addedTag.get()).data(),
-    }
-
+    },
   });
 });
 
 //Read all categories
 router.get("/", async (req, res) => {
-  const db = admin.firestore();
-  const categoriesCollection = db.collection("tags");
-  const categories = await categoriesCollection.get();
-  const categoriesArray = [];
-  categories.forEach((doc) => {
-    categoriesArray.push({
+  const tags = await tagsCollection.get();
+  tags.forEach((doc) => {
+    res.status(200).send({
       id: doc.id,
       ...doc.data(),
     });
   });
-  res.status(200).send(categoriesArray);
+});
+
+//Get my tags
+router.get("/mytags", async (req, res) => {
+  //Get token from header
+
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  tagsCollection
+    .where("createdBy", "==", username)
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        res.json({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+    });
 });
 
 //Read a category
 router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const categoriesCollection = db.collection("tags");
-  const category = await categoriesCollection.doc(req.params.id).get();
+  const category = await tagsCollection.doc(req.params.id).get();
   if (!category.exists) {
     res.status(404).send({
       message: "Tag not found",
@@ -60,17 +87,13 @@ router.get("/:id", async (req, res) => {
 //Update a category
 router.put("/:id", async (req, res) => {
   try {
-
-
-    const db = admin.firestore();
-    const categoriesCollection = db.collection("tags");
-    const category = await categoriesCollection.doc(req.params.id).get();
+    const category = await tagsCollection.doc(req.params.id).get();
     if (!category.exists) {
       res.status(404).send({
         message: "Tag not found",
       });
     } else {
-      await categoriesCollection.doc(req.params.id).update({
+      await tagsCollection.doc(req.params.id).update({
         ...req.body,
         updatedAt: new Date().toISOString(),
       });
@@ -78,28 +101,26 @@ router.put("/:id", async (req, res) => {
         message: "Tag updated successfully",
         tag: {
           id: category.id,
-          ...(await categoriesCollection.doc(req.params.id).get()).data(),
+          ...(await tagsCollection.doc(req.params.id).get()).data(),
         },
       });
     }
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 });
 
 //Delete a category
 router.delete("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const categoriesCollection = db.collection("tags");
-  const category = await categoriesCollection.doc(req.params.id).get();
+  const category = await tagsCollection.doc(req.params.id).get();
   if (!category.exists) {
     res.status(404).send({
       message: "Tag not found",
     });
   } else {
-    await categoriesCollection.doc(req.params.id).delete();
+    await tagsCollection.doc(req.params.id).delete();
     res.status(200).send({
       message: "Tag deleted successfully",
     });

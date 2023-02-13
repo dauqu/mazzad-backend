@@ -3,9 +3,12 @@ const router = express.Router();
 var admin = require("firebase-admin");
 const slugify = require("slugify");
 
+const VerifyToken = require("../functions/verify-token");
+
 const db = admin.firestore();
 const productsCollection = db.collection("products");
 
+//Get all Products only for admin
 router.get("/", async (req, res) => {
   const db = admin.firestore();
   const addressCollection = db.collection("products");
@@ -18,6 +21,38 @@ router.get("/", async (req, res) => {
     });
   });
   res.status(200).send(addressArray);
+});
+
+//Get my product
+router.get("/my-products", async (req, res) => {
+  //Get token from header
+
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  productsCollection
+    .where("createdBy", "==", username)
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        res.json({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+    });
 });
 
 router.post("/", (req, res) => {
