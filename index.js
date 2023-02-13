@@ -61,7 +61,6 @@ app.use("/api/v1/register", require("./routes/register"));
 app.use("/api/v1/login", require("./routes/login"));
 app.use("/api/v1/users", require("./routes/users"));
 app.use("/api/v1/products", require("./routes/products"));
-app.use("/api/v1/auctions", require("./routes/auctions"));
 app.use("/api/v1/bids", require("./routes/bids"));
 app.use("/api/v1/storage", require("./routes/storage"));
 app.use("/api/v1/categories", require("./routes/categories"));
@@ -72,9 +71,6 @@ app.use("/api/v1/support", require("./routes/support"));
 app.use("/api/v1/search", require("./routes/search"));
 app.use("/api/v1/profile", require("./routes/profile"));
 app.use("/api/v1/companies", require("./routes/companies"));
-app.use("/api/v1/refund", require("./routes/refund"));
-app.use("/api/v1/complaints", require("./routes/complaints"));
-app.use("/api/v1/contract", require("./routes/contract"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
