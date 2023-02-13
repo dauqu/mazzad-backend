@@ -5,7 +5,6 @@ const db = admin.firestore();
 
 //Read all rate
 router.get("/", async (req, res) => {
-  const db = admin.firestore();
   const rateCollection = db.collection("rate");
   const rate = await rateCollection.get();
   const rateArray = [];
@@ -20,7 +19,6 @@ router.get("/", async (req, res) => {
 
 //Read a rate
 router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
   const rateCollection = db.collection("rate");
   const rate = await rateCollection.doc(req.params.id).get();
   if (!rate.exists) {
@@ -38,7 +36,7 @@ router.get("/:id", async (req, res) => {
 //Update a rate
 router.put("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
+
     const rateCollection = db.collection("rate");
     const rate = await rateCollection.doc(req.params.id).get();
     if (!rate.exists) {
@@ -62,7 +60,7 @@ router.put("/:id", async (req, res) => {
 //Delete a rate
 router.delete("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
+
     const rateCollection = db.collection("rate");
     const rate = await rateCollection.doc(req.params.id).get();
     if (!rate.exists) {
