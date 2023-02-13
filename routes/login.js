@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const db = admin.firestore();
 bcrypt = require("bcryptjs");
 
+
 // //Get all documents JSON
 router.get("/", async (req, res) => {
   try {
@@ -44,7 +45,7 @@ router.post("/", async (req, res) => {
         req.body.password,
         user.password
       );
-      console.log(passwordIsValid);
+      
       if (passwordIsValid !== false) {
         //Generate token
         const token = jwt.sign(
@@ -53,7 +54,7 @@ router.post("/", async (req, res) => {
             email: user.email,
             username: user.username,
           },
-          "secret",
+          "Harsh@Singh8576",
           {
             expiresIn: "1h",
           }
@@ -84,61 +85,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-//company user
-router.post("/company", async (req, res) => {
-  try {
-    const companyRef = db.collection("companies");
-    const { email, password } = req.body;
-    const snapshot = await companyRef.where("email", "==", email).get();
-
-    if (snapshot.empty) {
-      res.status(400).send({
-        message: "User does not exist",
-      });
-    }
-    snapshot.forEach((doc) => {
-      const company = doc.data();
-      const passwordIsValid = bcrypt.compareSync(password, company.password);
-
-      console.log(passwordIsValid);
-
-      if (passwordIsValid !== false) {
-        //Generate token
-        const token = jwt.sign(
-          {
-            id: company.id,
-            email: company.email,
-          },
-          "secret",
-          {
-            expiresIn: "1d",
-          }
-        );
-
-        //Set token in cookie
-        res.cookie("token", token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        });
-
-        //Set header
-        res.header("x-access-token", token);
-
-        res.status(200).send({
-          message: "Company logged in successfully",
-          token: token,
-        });
-      } else {
-        res.status(400).send({
-          message: "Invalid password",
-        });
-      }
-    });
-  } catch (error) {
-    res.send(error);
-  }
-});
 //Check if user is logged in
 router.post("/check", async (req, res) => {
   try {
