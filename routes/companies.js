@@ -15,6 +15,33 @@ router.get("/", async (req, res) => {
   res.status(200).send(companies);
 });
 
+//Create a company
+router.post("/", async (req, res) => {
+  const db = admin.firestore();
+  const companiesCollection = db.collection("companies");
+
+  let hashedpass = await bcrypt.hash(req.body.password, 8);
+
+  const company = await companiesCollection.add({
+    name: req.body.name,
+    description: req.body.description,
+    address: req.body.address, //Address id
+    gst: req.body.gst,
+    company_owner: req.body.company_owner, //User id
+    category: req.body.category,
+    tags: req.body.tags, //Array of tags
+    featured_image: req.body.featured_image,
+    digital_signature: req.body.digital_signature,
+    status: "pending",
+    isVerified: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  res.status(201).send({
+    id: company.id,
+  });
+});
+
 //Get a company by id
 router.get("/:id", async (req, res) => {
   const db = admin.firestore();
@@ -25,23 +52,6 @@ router.get("/:id", async (req, res) => {
   } else {
     res.status(200).send(company.data());
   }
-});
-
-//Create a company
-router.post("/", async (req, res) => {
-  const db = admin.firestore();
-  const companiesCollection = db.collection("companies");
-
-  let hashedpass = await bcrypt.hash(req.body.password, 8);
-
-  const company = await companiesCollection.add({
-    ...req.body,
-    createAt: new Date().toISOString(),
-    updateAt: new Date().toISOString(),
-  });
-  res.status(201).send({
-    id: company.id,
-  });
 });
 
 //Update a company
