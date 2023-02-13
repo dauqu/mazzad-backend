@@ -29,12 +29,19 @@ router.get("/", async (req, res) => {
   const snapshot = await addressCollection
     .where("username", "==", username)
     .get();
-  snapshot.forEach((doc) => {
-    res.json({
-      id: doc.id,
-      ...doc.data(),
+  //Check if address exists
+  if (snapshot.empty) {
+    res.status(404).send({
+      message: "No address found",
     });
-  });
+  } else {
+    snapshot.forEach((doc) => {
+      res.json({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+  }
 });
 
 //Get a address

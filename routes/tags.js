@@ -8,11 +8,28 @@ const db = admin.firestore();
 const tagsCollection = db.collection("tags");
 
 router.post("/", async (req, res) => {
+  //Get token from header
+
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
   //Add new category to the collection
   const addedTag = await tagsCollection.add({
     name: req.body.name,
     description: req.body.description,
-    createdBy: "harsha",
+    createdBy: username,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -60,12 +77,19 @@ router.get("/mytags", async (req, res) => {
     .where("createdBy", "==", username)
     .get()
     .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        res.json({
-          id: doc.id,
-          ...doc.data(),
+      //Check if no tags
+      if (snapshot.empty) {
+        res.status(404).send({
+          message: "No tags found",
         });
-      });
+      } else {
+        snapshot.forEach((doc) => {
+          res.json({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+      }
     });
 });
 

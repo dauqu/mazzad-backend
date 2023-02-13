@@ -46,12 +46,14 @@ router.get("/my-products", async (req, res) => {
     .where("createdBy", "==", username)
     .get()
     .then((snapshot) => {
+      const products = [];
       snapshot.forEach((doc) => {
-        res.json({
+        products.push({
           id: doc.id,
           ...doc.data(),
         });
       });
+      res.status(200).send(products);
     });
 });
 

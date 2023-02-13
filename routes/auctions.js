@@ -53,12 +53,21 @@ router.get("/", (req, res) => {
   auctionCollection
     .get()
     .then((data) => {
-      data.forEach((doc) => {
-        return res.status(200).json({
-          id: doc.id,
-          ...doc.data(),
+      //Check if auctions exist
+      if (data.empty) {
+        return res.status(404).json({
+          message: "No auctions found",
         });
-      });
+      } else {
+        let auctions = [];
+        data.forEach((doc) => {
+          auctions.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+        return res.status(200).json(auctions);
+      }
     })
     .catch((err) => {
       console.log(err);
