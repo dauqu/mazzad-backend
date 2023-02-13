@@ -1,50 +1,102 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const db = admin.firestore();
 const slugify = require("slugify");
+
+const VerifyToken = require("../functions/verify-token");
+
+const db = admin.firestore();
+const companiesCollection = db.collection("companies");
 
 //Get all address
 router.get("/", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("companies");
-  const address = await addressCollection.get();
-  const addressArray = [];
-  address.forEach((doc) => {
-    addressArray.push({
+  const companies = await companiesCollection.get();
+  const companiesArray = [];
+  companies.forEach((doc) => {
+    companiesArray.push({
       id: doc.id,
       ...doc.data(),
     });
   });
-  res.status(200).send(addressArray);
+  res.status(200).send(companiesArray);
 });
 
 //Get a address
 router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("companies");
-  const address = await addressCollection.doc(req.params.id).get();
-  if (!address.exists) {
+  const companies = await companiesCollection.doc(req.params.id).get();
+  if (!companies.exists) {
     res.status(404).send({
       message: "Company not found",
     });
   } else {
     res.status(200).send({
-      id: address.id,
-      ...address.data(),
+      id: companies.id,
+      ...companies.data(),
     });
+  }
+});
+
+//My companies
+router.get("/my-companies", async (req, res) => {
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+
+  //Get address by username
+  const snapshot = await companiesCollection
+    .where("createdBy", "==", username)
+    .get();
+  //Check if address exists
+  if (snapshot.empty) {
+    res.status(404).send({
+      message: "No companies found",
+    });
+  } else {
+    const companiesArray = [];
+    snapshot.forEach((doc) => {
+      companiesArray.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+    res.status(200).send(companiesArray);
   }
 });
 
 //Create a address
 router.post("/", async (req, res) => {
-  const db = admin.firestore();
-  const addressCollection = db.collection("companies");
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
 
   //Add new address to the collection
-  const addedAddress = await addressCollection.add({
+  const addedAddress = await companiesCollection.add({
     ...req.body,
-    createdBy: "harsha",
+    createdBy: username,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
@@ -61,15 +113,13 @@ router.post("/", async (req, res) => {
 //Update a address
 router.put("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
-    const addressCollection = db.collection("companies");
-    const address = await addressCollection.doc(req.params.id).get();
+    const address = await companiesCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
         message: "Company not found",
       });
     } else {
-      await addressCollection.doc(req.params.id).update({
+      await companiesCollection.doc(req.params.id).update({
         ...req.body,
         updatedAt: new Date().toISOString(),
       });
@@ -85,15 +135,13 @@ router.put("/:id", async (req, res) => {
 //Delete a address
 router.delete("/:id", async (req, res) => {
   try {
-    const db = admin.firestore();
-    const addressCollection = db.collection("companies");
-    const address = await addressCollection.doc(req.params.id).get();
+    const address = await companiesCollection.doc(req.params.id).get();
     if (!address.exists) {
       res.status(404).send({
         message: "Company not found",
       });
     } else {
-      await addressCollection.doc(req.params.id).delete();
+      await companiesCollection.doc(req.params.id).delete();
       res.status(200).json({});
     }
   } catch (error) {

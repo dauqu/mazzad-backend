@@ -26,7 +26,6 @@ router.get("/", async (req, res) => {
 //Get my product
 router.get("/my-products", async (req, res) => {
   //Get token from header
-
   const token =
     req.body.token || req.cookies.token || req.headers["x-access-token"];
 
