@@ -20,8 +20,6 @@ router.post("/", async (req, res) => {
   const db = admin.firestore();
   const companiesCollection = db.collection("companies");
 
-  let hashedpass = await bcrypt.hash(req.body.password, 8);
-
   const company = await companiesCollection.add({
     name: req.body.name,
     description: req.body.description,
