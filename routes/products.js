@@ -33,23 +33,21 @@ router.post("/", (req, res) => {
     Math.random().toString(36).substring(2, 15);
 
   //Generate Random number for SKU
-    const sku = Math.floor(Math.random() * 1000000);
+  const sku = Math.floor(Math.random() * 1000000);
 
   //Insert a new document into the collection
   usersCollection.doc(productId).set({
-    title: req.body.title,
-    slug: slug,
+    name: req.body.name,
     description: req.body.description,
-    price: req.body.price,
-    sale_price: req.body.sale_price,
-    image: req.body.image,
-    vendor: req.body.vendor,
-    status: req.body.status,
-    sku: sku,
     category: req.body.category,
-    type: req.body.type,
-    featured: req.body.featured,
-    language: req.body.language,
+    sku: sku,
+    slug: slug,
+    video: req.body.video,
+    video_thumbnail: req.body.video_thumbnail,
+    gallery: req.body.gallery,
+    tags: req.body.tags,
+    createdBy: "admin",
+    productId: productId,
     createdAt: new Date().toISOString(),
   });
 
@@ -57,6 +55,36 @@ router.post("/", (req, res) => {
   res.status(200).send({
     message: "Product registered successfully",
   });
+});
+
+//Get a product
+router.get("/:id", async (req, res) => {
+  try {
+    const response = await productsCollection.doc(req.params.id).get();
+    const product = response.data();
+    res.send(product);
+  } catch (error) {
+    res.send(error);
+  }
+});
+
+//Update a product
+router.put("/:id", async (req, res) => {
+  try {
+    const response = await productsCollection.doc(req.params.id).update({
+      name: req.body.name,
+      description: req.body.description,
+      category: req.body.category,
+      video: req.body.video,  
+      video_thumbnail: req.body.video_thumbnail,
+      gallery: req.body.gallery,
+      tags: req.body.tags,
+      updatedAt: new Date().toISOString(),
+    });
+    res.send("Product updated successfully");
+  } catch (error) {
+    res.send(error);
+  }
 });
 
 //Delete a product

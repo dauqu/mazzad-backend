@@ -17,8 +17,8 @@ router.post("/", Middleware, (req, res) => {
 
   //Insert a new document into the collection
   usersCollection.doc(userId).set({
-    username: req.body.username,
     fullName: req.body.fullName,
+    username: req.body.username,
     email: req.body.email,
     password: hashedPassword,
     userId: userId,
@@ -42,17 +42,19 @@ async function Middleware(req, res, next) {
   }
 
   //Check if user exists
-  // const phone = await usersCollection
-  //   .where("phone", "==", req.body.phone)
-  //   .get();
-  // if (!phone.empty) {
-  //   res.status(400).send({
-  //     message: "User already exists",
-  //   });
-  // }
+  const phone = await usersCollection
+    .where("phone", "==", req.body.phone)
+    .get();
+  if (!phone.empty) {
+    res.status(400).send({
+      message: "User already exists",
+    });
+  }
 
   //Check if user exists
-  const username = await usersCollection.where("username", "==", req.body.username).get();
+  const username = await usersCollection
+    .where("username", "==", req.body.username)
+    .get();
   if (!username.empty) {
     res.status(400).send({
       message: "User already exists",
@@ -60,6 +62,6 @@ async function Middleware(req, res, next) {
   }
 
   next();
-} 
- 
+}
+
 module.exports = router;

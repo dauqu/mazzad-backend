@@ -10,6 +10,7 @@ router.post("/", async (req, res) => {
   const addedTag = await categoriesCollection.add({
     name: req.body.name,
     description: req.body.description,
+    createdBy: "harsha",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
