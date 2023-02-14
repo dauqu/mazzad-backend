@@ -70,6 +70,7 @@ app.use("/api/v1/complaints", require("./routes/complaints"));
 app.use("/api/v1/contract", require("./routes/contract"));
 app.use("/api/v1/ads", require("./routes/ads-management"));
 app.use("/api/v1/rate", require("./routes/rate"));
+app.use("/api/v1/logs", require("./routes/logs"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);

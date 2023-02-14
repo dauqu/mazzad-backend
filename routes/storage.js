@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
         files: files.map((file) => {
           return {
             name: file,
-            url: `https://saudi.dauqu.host/storage/${file}`,
+            url: `${req.protocol}://${req.get("host")}/storage/${file}`,
           };
         }),
       });

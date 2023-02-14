@@ -65,7 +65,7 @@ router.post("/", (req, res) => {
     const usersCollection = db.collection("products");
 
     //Generate slug with filter and replace spaces with dashes
-    const slug = slugify(req.body.title, {
+    const slug = slugify(req.body.name, {
       replacement: "-",
       remove: /[*+~.()'"!:@]/g,
       lower: true,
