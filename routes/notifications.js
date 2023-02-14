@@ -2,16 +2,23 @@ const express = require("express");
 const router = express.Router();
 //Firebase admin
 const admin = require("firebase-admin");
+const db = admin.firestore();
+const notificationsCollection = db.collection("notifications");
 
 //Get all notifications
 router.get("/", async (req, res) => {
-  const db = admin.firestore();
-  const notificationsCollection = db.collection("notifications");
 
   try {
     const response = await notificationsCollection.get();
-    const notifications = response.docs.map((doc) => doc.data());
-    res.send(notifications);
+    let notifications = [];
+    response.forEach((doc) => {
+      notifications.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    res.json(notifications);
   } catch (error) {
     res.send(error);
   }
@@ -19,8 +26,6 @@ router.get("/", async (req, res) => {
 
 //Get a notification
 router.get("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const notificationsCollection = db.collection("notifications");
   const notification = await notificationsCollection.doc(req.params.id).get();
   if (!notification.exists) {
     res.status(404).send({
@@ -38,13 +43,17 @@ router.get("/:id", async (req, res) => {
 
 //Create a notification
 router.post("/", (req, res) => {
-  const db = admin.firestore();
-  const notificationsCollection = db.collection("notifications");
-
+  const { title, description, type } = req.body;
+  if (!title || !description || !type) {
+    res.status(400).send({
+      message: "Title, description and type are required",
+    });
+  }
   //Add new notification to the collection
   notificationsCollection.add({
-    title: req.body.title,
-    description: req.body.description,
+    title: title,
+    description: description,
+    type: type,
     createdAt: new Date().toISOString(),
   });
 
@@ -56,8 +65,6 @@ router.post("/", (req, res) => {
 
 //Update a notification
 router.put("/:id", async (req, res) => {
-  const db = admin.firestore();
-  const notificationsCollection = db.collection("notifications");
   const notification = await notificationsCollection.doc(req.params.id).get();
   if (!notification.exists) {
     res.status(404).send({
@@ -73,3 +80,22 @@ router.put("/:id", async (req, res) => {
     });
   }
 });
+
+// delete notification 
+router.delete("/:id", async (req, res) => {
+  const notification = await notificationsCollection.doc(req.params.id).get();
+  if (!notification.exists) {
+    res.status(404).send({
+      message: "Notification not found",
+    });
+  } else {
+
+    await notificationsCollection.doc(req.params.id).delete();
+    res.status(200).send({
+      message: "Notification deleted successfully",
+    });
+  }
+});
+
+
+module.exports = router;

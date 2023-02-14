@@ -43,15 +43,30 @@ router.post("/", async (req, res) => {
         lower: true,
       });
 
+      let filename = slug+"/"+new Date().getTime();
+
       //Save file to server
-      uploadedFile.mv("./storage/" + slug);
+      uploadedFile.mv("./storage/" + filename);
 
       res.send({
         status: "success",
         message: "File successfully uploaded",
-        file_name: `${req.protocol}://${req.get("host")}/storage/${slug}`,
+        file_name: `${req.protocol}://${req.get("host")}/storage/${filename}`,
       });
     }
+  } catch (err) {
+    res.status(500).json({ message: "error.message" });
+  }
+});
+
+router.delete("/:filename", async (req, res) => {
+  try {
+    //Delete file from server
+    fs.unlinkSync("./storage/" + req.params.filename);
+    res.send({
+      status: "success",
+      message: "File successfully deleted",
+    });
   } catch (err) {
     res.status(500).json({ message: "error.message" });
   }

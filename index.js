@@ -45,17 +45,14 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/register", require("./routes/register"));
 app.use("/api/v1/login", require("./routes/login"));
-
 app.use("/api/v1/users", require("./routes/users"));
-
 app.use("/api/v1/products", require("./routes/products"));
 app.use("/api/v1/auctions", require("./routes/auctions"));
 app.use("/api/v1/bids", require("./routes/bids"));
 app.use("/api/v1/address", require("./routes/address"));
-
 app.use("/api/v1/account", require("./routes/bank-accounts"));
 app.use("/api/v1/opportunities", require("./routes/opportunities"));
-
+app.use("/api/v1/emails", require("./routes/emails"));
 app.use("/api/v1/storage", require("./routes/storage"));
 app.use("/api/v1/categories", require("./routes/categories"));
 app.use("/api/v1/tags", require("./routes/tags"));
@@ -71,6 +68,9 @@ app.use("/api/v1/contract", require("./routes/contract"));
 app.use("/api/v1/ads", require("./routes/ads-management"));
 app.use("/api/v1/rate", require("./routes/rate"));
 app.use("/api/v1/logs", require("./routes/logs"));
+app.use("/api/v1/notification", require("./routes/notifications"));
+app.use("/api/v1/transactions", require("./routes/transactions"));
+app.use("/api/v1/sms", require("./routes/sms"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
