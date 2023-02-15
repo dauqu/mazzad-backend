@@ -39,15 +39,16 @@ router.post("/", (req, res) => {
   //Create new auction
   auctionCollection.add({
     title: req.body.title,
-    value: req.body.value,
-    currency: req.body.currency,
     description: req.body.description,
-    minimal_step: req.body.minimal_step,
-    tkn: req.body.tkn,
-    items: req.body.items,
     type: req.body.type,
+    value: req.body.value,
+    minimal_step: req.body.minimal_step,
+    currency: req.body.currency,
+    items: req.body.items,
     contract: req.body.contract,
     createdBy: username,
+    start_date: req.body.start_date,
+    end_date: req.body.end_date,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
