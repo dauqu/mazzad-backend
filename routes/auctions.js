@@ -13,7 +13,7 @@ router.post("/", (req, res) => {
   //Get token from header
   const token =
     req.body.token || req.cookies.token || req.headers["x-access-token"];
- 
+
   //Return if no token
   if (!token) {
     res.status(401).send({
@@ -35,7 +35,6 @@ router.post("/", (req, res) => {
       message: "Invalid Username",
     });
   }
-
 
   //Create new auction
   auctionCollection.add({
@@ -129,19 +128,36 @@ router.get("/my-auctions", (req, res) => {
 //Get Auction by ID (GET)
 router.get("/:id", (req, res) => {
   const auctionId = req.params.id;
+
   auctionCollection
     .doc(auctionId)
     .get()
     .then((doc) => {
+      const productRef = db.collection("products").doc(doc.data().items[0]);
+      console.log(doc.data().items[0]);
       if (!doc.exists) {
         return res.status(404).json({
           error: "Auction not found",
         });
       }
-      return res.status(200).json(doc.data());
+      productRef.get().then((product) => {
+        return res.status(200).json({
+          id: doc.id,
+          ...doc.data(),
+          items: {
+            id: product.id,
+            name: product.data().name,
+            description: product.data().description,
+            video_thumbnail: product.data().video_thumbnail,
+            slug: product.data().slug,
+            createdAt: product.data().createdAt,
+            video: product.data().video,
+            sku: product.data().sku,
+          }
+        });
+      });
     })
     .catch((err) => {
-      console.log(err);
       return res.status(500).json({
         error: err.code,
       });
