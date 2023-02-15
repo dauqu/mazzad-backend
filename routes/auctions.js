@@ -7,14 +7,13 @@ const VerifyToken = require("../functions/verify-token");
 
 const db = admin.firestore();
 const auctionCollection = db.collection("auctions");
-const productsCollection = db.collection("products");
 
 //Create Auction (POST)
 router.post("/", (req, res) => {
   //Get token from header
   const token =
     req.body.token || req.cookies.token || req.headers["x-access-token"];
-
+ 
   //Return if no token
   if (!token) {
     res.status(401).send({
@@ -36,6 +35,7 @@ router.post("/", (req, res) => {
       message: "Invalid Username",
     });
   }
+
 
   //Create new auction
   auctionCollection.add({
@@ -74,7 +74,6 @@ router.get("/", (req, res) => {
         data.forEach((doc) => {
           auctions.push({
             id: doc.id,
-            //Populate products array with product documents
             ...doc.data(),
           });
         });
@@ -128,32 +127,25 @@ router.get("/my-auctions", (req, res) => {
 });
 
 //Get Auction by ID (GET)
-router.get("/:id", async (req, res) => {
+router.get("/:id", (req, res) => {
   const auctionId = req.params.id;
-  try {
-    const auctionDoc = await auctionCollection.doc(auctionId).get();
-    
-    if (!auctionDoc.exists) {
-      return res.status(404).json({
-        error: "Auction not found",
+  auctionCollection
+    .doc(auctionId)
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).json({
+          error: "Auction not found",
+        });
+      }
+      return res.status(200).json(doc.data());
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        error: err.code,
       });
-    }
-    const auctionData = auctionDoc.data();
-
-    return res.status(200).json({
-      id: auctionDoc.id,
-      //Popolaute items data 
-      items: {
-        ...productData,
-      },
-      ...auctionData,
     });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      error: err.code,
-    });
-  }
 });
 
 //Update Auction (PUT)
