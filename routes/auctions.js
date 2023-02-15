@@ -36,6 +36,24 @@ router.post("/", (req, res) => {
     });
   }
 
+  //Check all fields are filled
+    if (
+    req.body.title === "" ||
+    req.body.description === "" ||
+    req.body.type === "" ||
+    req.body.value === "" ||
+    req.body.minimal_step === "" ||
+    req.body.currency === "" ||
+    req.body.items === "" ||
+    req.body.contract === "" ||
+    req.body.start_date === "" ||
+    req.body.end_date === ""
+    ) {
+    return res.status(400).send({
+        message: "All fields are required",
+    });
+    }
+
   //Create new auction
   auctionCollection.add({
     title: req.body.title,
