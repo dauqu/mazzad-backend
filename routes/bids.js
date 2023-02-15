@@ -27,14 +27,10 @@ router.post("/", (req, res) => {
   try {
     //Add new bid to the collection
     bidsCollection.add({
-      title: req.body.title,
-      value: req.body.value,
+      auctionId: req.body.auctionId,
+      amount: req.body.amount,
       description: req.body.description,
       currency: req.body.currency,
-      minimal_step: req.body.minimal_step,
-      token: req.body.token,
-      items: req.body.items,
-      contract: req.body.contract,
       createdBy: username,
       createdAt: new Date().toISOString(),
     });

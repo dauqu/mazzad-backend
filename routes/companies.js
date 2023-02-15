@@ -11,12 +11,45 @@ const companiesCollection = db.collection("companies");
 //Get all address
 router.get("/", async (req, res) => {
   const companies = await companiesCollection.get();
-  const companiesArray = []; 
+  const companiesArray = [];
   companies.forEach((doc) => {
     companiesArray.push({
       id: doc.id,
       ...doc.data(),
     });
+  });
+  res.status(200).send(companiesArray);
+});
+
+//My companies
+router.get("/my", async (req, res) => {
+  //Get token from header
+  const token =
+    req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+  //Return if no token
+  if (!token) {
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
+
+  //Check if no token
+  const verified = VerifyToken(token);
+
+  const username = verified.username;
+  console.log(username);
+
+  //Get address by username
+  const companies = await companiesCollection.get();
+  const companiesArray = [];
+  companies.forEach((doc) => {
+    if (doc.data().createdBy === username) {
+      companiesArray.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    }
   });
   res.status(200).send(companiesArray);
 });
@@ -33,45 +66,6 @@ router.get("/:id", async (req, res) => {
       id: companies.id,
       ...companies.data(),
     });
-  }
-});
-
-//My companies
-router.get("/my-companies", async (req, res) => {
-  //Get token from header
-  const token =
-    req.body.token || req.cookies.token || req.headers["x-access-token"];
-
-  //Return if no token
-  if (!token) {
-    res.status(401).send({
-      message: "No token provided",
-    });
-  }
-
-  //Check if no token
-  const verified = VerifyToken(token);
-
-  const username = verified.username;
-
-  //Get address by username
-  const snapshot = await companiesCollection
-    .where("createdBy", "==", username)
-    .get();
-  //Check if address exists
-  if (snapshot.empty) {
-    res.status(404).send({
-      message: "No companies found",
-    });
-  } else {
-    const companiesArray = [];
-    snapshot.forEach((doc) => {
-      companiesArray.push({
-        id: doc.id,
-        ...doc.data(),
-      });
-    });
-    res.status(200).send(companiesArray);
   }
 });
 
