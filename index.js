@@ -9,7 +9,11 @@ app.use(cookieParser());
 //Allow cors
 const cors = require("cors");
 //Loop of allowed origins
-const allowedOrigins = ["https://mazzad-admin-k1le.vercel.app", "http://localhost:3000", "https://companyadminpanel.vercel.app"];
+const allowedOrigins = [
+  "https://mazzad-admin-k1le.vercel.app",
+  "http://localhost:3000",
+  "https://companyadminpanel.vercel.app",
+];
 
 app.use(
   cors({
@@ -36,7 +40,7 @@ admin.initializeApp({
 
 app.use(express.json());
 
-app.use(express.static(__dirname+"/"));
+app.use(express.static(__dirname + "/"));
 
 app.get("/", (req, res) => {
   //Return Hello World
