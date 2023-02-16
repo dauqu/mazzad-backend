@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 4000;
+const fs = require("fs");
 
 //Import cookie parser
 const cookieParser = require("cookie-parser");
@@ -40,12 +41,31 @@ admin.initializeApp({
 
 app.use(express.json());
 
-app.use(express.static(__dirname + "/"));
+// app.use(express.static(__dirname + "/"));
 
-app.get("/", (req, res) => {
-  //Return Hello World
-  res.send("Hello World");
+//Allow public access to storage
+app.use("/storage", express.static(__dirname + "/storage"));
+
+//Get all files
+app.get("/storage", async (req, res) => {
+  //Read dir and return JSON
+  fs.readdir(__dirname + "/storage", (err, files) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json({
+        files: files,
+        files: files.map((file) => {
+          return {
+            name: file,
+            url: `${req.protocol}://${req.get("host")}/storage/${file}`,
+          };
+        }),
+      });
+    }
+  });
 });
+      
 
 app.use("/api/v1/register", require("./routes/register"));
 app.use("/api/v1/login", require("./routes/login"));

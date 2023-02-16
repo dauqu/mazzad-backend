@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
-const jwt = require("jsonwebtoken");
 
 const VerifyToken = require("../functions/verify-token");
 
@@ -63,6 +62,7 @@ router.post("/", (req, res) => {
         minimal_step: req.body.minimal_step,
         currency: req.body.currency,
         items: req.body.items,
+        productsref: `products/${req.body.items}`,
         contract: req.body.contract,
         createdBy: username,
         start_date: req.body.start_date,
