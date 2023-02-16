@@ -152,7 +152,7 @@ router.get("/:id", (req, res) => {
         .doc(auctionId)
         .get()
         .then((doc) => {
-            const productRef = db.collection("products").doc(doc.data().items[0]);
+            const productRef = db.collection("products").doc(doc.data().items);
             console.log(doc.data().items[0]);
             if (!doc.exists) {
                 return res.status(404).json({
