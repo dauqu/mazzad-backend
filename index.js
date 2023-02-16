@@ -44,9 +44,9 @@ app.use(express.json());
 // app.use(express.static(__dirname + "/"));
 
 //Allow public access to storage
-app.use(express.static(__dirname + "/storage"));
+app.use(express.static("./storage"));
 
-app.get("/st", async (req, res) => {
+app.get("/files", async (req, res) => {
   //Read dir and return JSON
   fs.readdir(__dirname + "/storage", (err, files) => {
     if (err) {
