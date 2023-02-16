@@ -44,7 +44,7 @@ app.use(express.json());
 // app.use(express.static(__dirname + "/"));
 
 //Allow public access to storage
-app.use("/storage", express.static(__dirname + "/storage"));
+app.use(express.static(__dirname + "/storage"));
 
 //Get all files
 app.get("/storage", async (req, res) => {
