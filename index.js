@@ -47,25 +47,9 @@ app.use(express.json());
 app.use(express.static(__dirname + "/storage"));
 
 //Get all files
-app.get("/storage", async (req, res) => {
-  //Read dir and return JSON
-  fs.readdir(__dirname + "/storage", (err, files) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json({
-        files: files,
-        files: files.map((file) => {
-          return {
-            name: file,
-            url: `${req.protocol}://${req.get("host")}/storage/${file}`,
-          };
-        }),
-      });
-    }
-  });
+app.get("/", async (req, res) => {
+    res.send("Hello World");
 });
-      
 
 app.use("/api/v1/register", require("./routes/register"));
 app.use("/api/v1/login", require("./routes/login"));
