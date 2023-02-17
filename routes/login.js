@@ -117,9 +117,7 @@ router.get("/logout", async (req, res) => {
   try {
     res.clearCookie("token");
     res.header("x-access-token", null);
-    res.status(200).send({
-      message: "User logged out successfully",
-    });
+    res.json({ message: "Logout Success", status: "success" });
   } catch (error) {
     res.json({
       message: error.message,
