@@ -113,7 +113,7 @@ router.post("/check", async (req, res) => {
 });
 
 // code to clear cookie and token from header and logout user
-router.post("/logout", async (req, res) => {
+router.get("/logout", async (req, res) => {
   try {
     res.clearCookie("token");
     res.header("x-access-token", null);
