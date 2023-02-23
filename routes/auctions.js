@@ -69,6 +69,7 @@ router.post("/", (req, res) => {
         end_date: req.body.end_date,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        status: req.body.status || "active"
     });
 
     //Send response
@@ -231,6 +232,53 @@ router.delete("/:id", (req, res) => {
                 error: err.code,
             });
         });
+});
+
+
+// get actions by status 
+router.get("/status/:status", async (req, res) => {
+    try {
+        const status = req.params.status;
+        const token =
+            req.body.token || req.cookies.token || req.headers["x-access-token"];
+
+        //Return if no token
+        if (!token) {
+            res.status(401).send({
+                message: "No token provided",
+            });
+        }
+
+        //Check if no token
+        const verified = VerifyToken(token);
+        const username = verified.username;
+
+        let auctiondata = auctionCollection
+            .where("createdBy", "==", username)
+
+        auctiondata = await auctiondata.where("status", "==", status)
+            .get()
+
+        let auctions = [];
+        auctiondata.forEach((doc) => {
+            auctions.push({
+                id: doc.id,
+                ...doc.data(),
+            });
+        });
+        
+        return res.status(200).json({
+            auctions,
+            message: "Auctions found"
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+        });
+
+    }
 });
 
 module.exports = router;
