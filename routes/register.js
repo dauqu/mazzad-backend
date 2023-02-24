@@ -2,36 +2,41 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const bcrypt = require("bcryptjs");
+const db = admin.firestore();
+
+
 
 router.post("/", Middleware, async (req, res) => {
   try {
-  const db = admin.firestore();
   const usersCollection = db.collection("users");
+  const walletCollection = db.collection("wallet");
 
   //Generate random user id
   const userId =
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15);
-
+  Math.random().toString(36).substring(2, 15) +
+  Math.random().toString(36).substring(2, 15);
+  
   //Hash password
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-
+  // create new wallet 
+  let wallet = await walletCollection.add({
+    userId: userId,
+    amount: 0,
+    createdAt: new Date().toISOString(),
+  });
+  
   //Insert a new document into the collection
   let addedUser = await usersCollection.add({
+    ...req.body,
     fullName: req.body.fullName,
-    logo: req.body.logo || "",
-    description: req.body.description || "",
     username: req.body.username,
     email: req.body.email,
-    phone: req.body.phone,
-    country: req.body.country || "India",
-    google_map: req.body.google_map || "",
     password: hashedPassword,
     userId: userId,
     role: "user",
     status: "active",
-    otp: "",
     createdAt: new Date().toISOString(),
+    wallet_id: wallet.id,
   });
 
   //Send response
@@ -56,7 +61,6 @@ async function Middleware(req, res, next) {
     !req.body.fullName ||
     !req.body.username ||
     !req.body.email ||
-    !req.body.phone ||
     !req.body.password
   ) {
     return res.status(400).send({
@@ -68,16 +72,6 @@ async function Middleware(req, res, next) {
   const usersCollection = db.collection("users");
   const user = await usersCollection.where("email", "==", req.body.email).get();
   if (!user.empty) {
-    return res.status(400).send({
-      message: "User already exists",
-    });
-  }
-
-  //Check if user exists
-  const phone = await usersCollection
-    .where("phone", "==", req.body.phone)
-    .get();
-  if (!phone.empty) {
     return res.status(400).send({
       message: "User already exists",
     });

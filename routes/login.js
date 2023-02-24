@@ -40,8 +40,11 @@ router.post("/", async (req, res) => {
       });
     }
 
+
+
     snapshot.forEach((doc) => {
       const user = doc.data();
+      console.log(user);
       const passwordIsValid = bcrypt.compareSync(
         req.body.password,
         user.password
@@ -63,7 +66,7 @@ router.post("/", async (req, res) => {
             email: user.email,
             username: user.username,
           },
-          "Harsh@Singh8576",
+          process.env.JWT_SECRET,
           {
             //Expire in a year
             expiresIn: 31556926,

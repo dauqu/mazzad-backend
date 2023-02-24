@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const admin = require("firebase-admin");
 const db = admin.firestore();
-const walletRef = db.collection("wallets");
+const walletRef = db.collection("wallet");
+const jwt = require("jsonwebtoken");
 
 //Get all documents JSON
 router.get("/", async (req, res) => {
@@ -42,16 +43,38 @@ router.get("/:id", async (req, res) => {
 
 // add amount to wallet
 router.post("/add", async (req, res) => {
+    const token = req.headers["token"] || req.cookies.token;
+    const {  amount } = req.body;
     try {
-        const wallet = await walletRef.doc(req.body.id).get();
-        const walletData = wallet.data();
-        const newBalance = walletData.balance + req.body.amount;
-        await walletRef.doc(req.body.id).update({
-            balance: newBalance
+
+        if(!token) return res.status(401).json({
+            message: "Unauthorized",
         });
-        res.json({
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded.id) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+        const wallet = await walletRef.where("userId", "==", id).limit(1).get();
+
+        if (wallet.empty) {
+            return res.status(400).send({
+                message: "User does not exist",
+            });
+        }
+
+        wallet.forEach((doc) => {
+            const wallet = doc.data();
+            const toupdateamount = wallet.amount + amount;
+            walletRef.doc(doc.id).update({
+                amount: toupdateamount,
+            });
+        });
+
+        return res.json({
             id: wallet.id,
-            ...wallet.data(),
+            ...(await wallet.get()).data(),
         });
     } catch (error) {
         res.status(500).send({
@@ -60,3 +83,7 @@ router.post("/add", async (req, res) => {
         });
     }
 });
+
+    
+
+module.exports = router;
