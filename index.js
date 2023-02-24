@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 4000;
 const fs = require("fs");
-
+require("dotenv").config();
 //Import cookie parser
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -34,6 +34,7 @@ app.use(
 //Config Firebase
 const { fire_auth } = require("./config/firebase");
 var admin = require("firebase-admin");
+// const SendMail = require("./functions/smtp");
 
 admin.initializeApp({
   credential: admin.credential.cert(fire_auth),
@@ -67,7 +68,9 @@ app.get("/files", async (req, res) => {
 
 //Get all files
 app.get("/", async (req, res) => {
-    res.send("Hello World");
+  // SendMail().catch(console.error);
+
+  res.send("Hello World");
 });
 
 app.use("/api/v1/register", require("./routes/register"));
