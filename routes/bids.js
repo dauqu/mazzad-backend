@@ -23,6 +23,11 @@ router.post("/", (req, res) => {
   const verified = VerifyToken(token);
 
   const username = verified.username;
+  if(!username || username == ""){
+    res.status(401).send({
+      message: "No token provided",
+    });
+  }
 
   try {
     //Add new bid to the collection
@@ -61,6 +66,33 @@ router.get("/", async (req, res) => {
       });
     });
     res.status(200).json(bidsArray);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//Read all bids for an auction
+router.get("/auction/:id", async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const bidsCollection = db.collection("bids");
+    const bids = await bidsCollection.where("auctionId", "==", req.params.id).get();
+
+    const bidsArray = [];
+    let highest_bid = 0;
+    bids.forEach((doc) => {
+      if(Number(doc.data().amount) > Number(highest_bid)){
+        highest_bid = Number(doc.data().amount);
+      }
+      bidsArray.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+    res.status(200).json({
+      bids: bidsArray,
+      highest_bid: highest_bid
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

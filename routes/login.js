@@ -38,6 +38,7 @@ router.post("/", async (req, res) => {
         message: "User does not exist",
       });
     }
+
     snapshot.forEach((doc) => {
       const user = doc.data();
       const passwordIsValid = bcrypt.compareSync(
@@ -45,7 +46,15 @@ router.post("/", async (req, res) => {
         user.password
       );
 
-      if (passwordIsValid !== false) {
+
+      if(user.status === "blacklist"){
+        return res.status(400).send({
+          message: "You are blocked",
+        });
+      }
+
+
+      if (passwordIsValid) {
         //Generate token
         const token = jwt.sign(
           {

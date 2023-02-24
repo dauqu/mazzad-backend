@@ -99,13 +99,14 @@ router.get("/", async (req, res) => {
                 ...auctionData,
                 items: {
                     id: productDoc.id,
-                    name: productData.name,
-                    description: productData.description,
-                    video_thumbnail: productData.video_thumbnail,
-                    slug: productData.slug,
-                    createdAt: productData.createdAt,
-                    video: productData.video,
-                    sku: productData.sku,
+                    // name: productData.name,
+                    // description: productData.description,
+                    // video_thumbnail: productData.video_thumbnail,
+                    // slug: productData.slug,
+                    // createdAt: productData.createdAt,
+                    // video: productData.video,
+                    // sku: productData.sku,
+                    ...productData
                 },
             });
         });
