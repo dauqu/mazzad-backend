@@ -6,6 +6,7 @@ const VerifyToken = require("../functions/verify-token");
 
 const db = admin.firestore();
 const auctionCollection = db.collection("auctions");
+const productsCollection = db.collection("products");
 
 //Create Auction (POST)
 router.post("/", (req, res) => {
@@ -78,71 +79,93 @@ router.post("/", (req, res) => {
     });
 });
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
     //Get all acutions (GET)
-    auctionCollection
-        .get()
-        .then((data) => {
-            //Check if auctions exist
-            if (data.empty) {
-                return res.status(404).json({
-                    message: "No auctions found",
-                });
-            } else {
-                let auctions = [];
-                data.forEach((doc) => {
-                    auctions.push({
-                        id: doc.id,
-                        ...doc.data(),
-                    });
-                });
-                return res.status(200).json(auctions);
+    try {
+        const auctionSnap = await auctionCollection
+            .get();
+
+        var auctions = [];
+        
+        let jsdata = auctionSnap.docs.map((doc) => {
+            const productRef = db.collection("products").doc(doc.data().items);
+            console.log(doc.data().items);
+            return async () => {
+                let prod = await productRef.get();
+    
+                let a = {
+                    id: doc.id,
+                    ...doc.data(),
+                    ...prod.data()
+                }
+                return a;
             }
-        })
-        .catch((err) => {
-            console.log(err);
-            return res.status(500).json({
-                error: err.code,
-            });
         });
+
+        console.log(auctions);
+        console.log(jsdata);
+        return res.status(200).json({
+            
+        });
+    } catch (error) {
+        return res.status(200).send({
+            error: error.code,
+            message: error.message
+        });
+    }
 });
 
 //Get all Auctions (GET)
-router.get("/my-auctions", (req, res) => {
-    //Get token from header
-    const token =
-        req.body.token || req.cookies.token || req.headers["x-access-token"];
+router.get("/my-auctions", async (req, res) => {
+    try {
 
-    //Return if no token
-    if (!token) {
-        res.status(401).send({
-            message: "No token provided",
-        });
-    }
 
-    //Check if no token
-    const verified = VerifyToken(token);
+        //Get token from header
+        const token =
+            req.body.token || req.cookies.token || req.headers["x-access-token"];
 
-    const username = verified.username;
+        //Return if no token
+        if (!token) {
+            res.status(401).send({
+                message: "No token provided",
+            });
+        }
 
-    //Get auctions by username
-    auctionCollection
-        .where("createdBy", "==", username)
-        .get()
-        .then((data) => {
-            data.forEach((doc) => {
-                return res.status(200).json({
+        //Check if no token
+        const verified = VerifyToken(token);
+
+        const username = verified.username;
+
+        //Get auctions by username
+        const auctionSnap = await auctionCollection
+            .where("createdBy", "==", username)
+            .get()
+
+        let auctions = [];
+
+
+        auctionSnap
+            .forEach(async (doc) => {
+                const product = await productsCollection
+                    .doc(doc.data().items).get();
+                let auction = {
                     id: doc.id,
                     ...doc.data(),
-                });
+                    items: {
+                        id: product.id,
+                        ...product.data()
+                    }
+                }
+                auctions.push(auction);
             });
-        })
-        .catch((err) => {
-            console.log(err);
-            return res.status(500).json({
-                error: err.code,
-            });
+
+        return res.status(200).json(auctions);
+    } catch (error) {
+        return res.status(200).json({
+            error: error.code,
+            message: error.message
         });
+    }
 });
 
 //Get Auction by ID (GET)
@@ -266,7 +289,7 @@ router.get("/status/:status", async (req, res) => {
                 ...doc.data(),
             });
         });
-        
+
         return res.status(200).json({
             auctions,
             message: "Auctions found"
