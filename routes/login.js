@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const db = admin.firestore();
 bcrypt = require("bcryptjs");
 
-
 // //Get all documents JSON
 router.get("/", async (req, res) => {
   try {
@@ -45,7 +44,7 @@ router.post("/", async (req, res) => {
         req.body.password,
         user.password
       );
-      
+
       if (passwordIsValid !== false) {
         //Generate token
         const token = jwt.sign(
@@ -57,7 +56,7 @@ router.post("/", async (req, res) => {
           "Harsh@Singh8576",
           {
             //Expire in a year
-            expiresIn: 31556926, 
+            expiresIn: 31556926,
           }
         );
 
@@ -110,6 +109,19 @@ router.post("/check", async (req, res) => {
     }
   } catch (error) {
     res.send;
+  }
+});
+
+// code to clear cookie and token from header and logout user
+router.post("/logout", async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.header("x-access-token", null);
+    res.json({ message: "Logout Success", status: "success" });
+  } catch (error) {
+    res.json({
+      message: error.message,
+    });
   }
 });
 
