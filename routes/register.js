@@ -30,6 +30,7 @@ router.post("/", Middleware, async (req, res) => {
     userId: userId,
     role: "user",
     status: "active",
+    otp: "",
     createdAt: new Date().toISOString(),
   });
 
