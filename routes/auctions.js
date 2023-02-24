@@ -6,6 +6,7 @@ const VerifyToken = require("../functions/verify-token");
 
 const db = admin.firestore();
 const auctionCollection = db.collection("auctions");
+const productCollection = db.collection("products");
 
 //Create Auction (POST)
 router.post("/", (req, res) => {
@@ -77,34 +78,46 @@ router.post("/", (req, res) => {
     });
 });
 
-router.get("/", (req, res) => {
-    //Get all acutions (GET)
-    auctionCollection
-        .get()
-        .then((data) => {
-            //Check if auctions exist
-            if (data.empty) {
-                return res.status(404).json({
-                    message: "No auctions found",
-                });
-            } else {
-                let auctions = [];
-                data.forEach((doc) => {
-                    auctions.push({
-                        id: doc.id,
-                        ...doc.data(),
-                    });
-                });
-                return res.status(200).json(auctions);
-            }
-        })
-        .catch((err) => {
-            console.log(err);
-            return res.status(500).json({
-                error: err.code,
+router.get("/", async (req, res) => {
+    try {
+        const resauctions = [];
+        const auctionsSnapshot = await auctionCollection.get();
+
+        if (auctionsSnapshot.empty) {
+            return res.status(404).json({ message: "No auctions found" });
+        }
+
+        const productPromises = auctionsSnapshot.docs.map(async (auctionDoc) => {
+            const productRef = db.collection("products").doc(auctionDoc.data().items);
+            const productDoc = await productRef.get();
+            const productData = productDoc.data();
+            const auctionData = auctionDoc.data();
+
+            resauctions.push({
+                id: auctionDoc.id,
+                ...auctionData,
+                items: {
+                    id: productDoc.id,
+                    name: productData.name,
+                    description: productData.description,
+                    video_thumbnail: productData.video_thumbnail,
+                    slug: productData.slug,
+                    createdAt: productData.createdAt,
+                    video: productData.video,
+                    sku: productData.sku,
+                },
             });
         });
+
+        await Promise.all(productPromises);
+
+        return res.status(200).json(resauctions);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.code });
+    }
 });
+
 
 //Get all Auctions (GET)
 router.get("/my-auctions", (req, res) => {
