@@ -1,10 +1,15 @@
 const router = require("express").Router();
 const admin = require("firebase-admin");
 const db = admin.firestore();
-const walletRef = db.collection("wallet");
-const jwt = require("jsonwebtoken");
 
-//Get all documents JSON
+db.settings({ ignoreUndefinedProperties: true });
+
+const walletRef = db.collection("wallet");
+const transactionRef = db.collection("transactions");
+
+const { getAuthUser } = require("../functions/getauth");
+
+//Get all wallet 
 router.get("/", async (req, res) => {
     try {
 
@@ -25,13 +30,35 @@ router.get("/", async (req, res) => {
     }
 });
 
-//Get a document JSON
-router.get("/:id", async (req, res) => {
+//Get a wallet by id
+router.get("/my",getAuthUser, async (req, res) => {
     try {
-        const wallet = await walletRef.doc(req.params.id).get();
-        res.json({
-            id: wallet.id,
-            ...wallet.data(),
+        const user = req.user;
+        
+        const wallet = await walletRef.doc(user.wallet_id).get();
+        let transaction = transactionRef.where("user", "==", user.id);
+        transaction = await transaction.where("type", "==", "wallet").get()
+
+        let transactions = [];
+        transaction.forEach((doc) => {
+            transactions.push({
+                id: doc.id,
+                ...doc.data(),
+            });
+        });
+
+        // sort transaction by date
+        transactions = transactions.sort((a, b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        return res.json({
+            wallet: {
+                id: wallet.id,
+                ...wallet.data(),
+            },
+            user : user,
+            transactions: transactions,
         });
     } catch (error) {
         res.status(500).send({
@@ -42,39 +69,121 @@ router.get("/:id", async (req, res) => {
 });
 
 // add amount to wallet
-router.post("/add", async (req, res) => {
-    const token = req.headers["token"] || req.cookies.token;
+router.post("/add",getAuthUser, async (req, res) => {
+    
     const {  amount } = req.body;
     try {
-
-        if(!token) return res.status(401).json({
-            message: "Unauthorized",
-        });
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded.id) {
-            return res.status(401).json({
-                message: "Unauthorized",
-            });
-        }
-        const wallet = await walletRef.where("userId", "==", id).limit(1).get();
-
-        if (wallet.empty) {
+        const user = req.user;
+        if(isNaN(amount)){
             return res.status(400).send({
-                message: "User does not exist",
+                message: "amount must be a number",
             });
         }
-
-        wallet.forEach((doc) => {
-            const wallet = doc.data();
-            const toupdateamount = wallet.amount + amount;
-            walletRef.doc(doc.id).update({
-                amount: toupdateamount,
+        if(Number(amount) <= 0){
+            return res.status(400).send({
+                message: "amount must be a positive number",
             });
+        }
+    
+        const wallet = await walletRef.doc(user.wallet_id).get();
+        const walletdata = wallet.data();
+
+        const toupdateamount = Number(walletdata.amount) + Number(amount);
+
+        await walletRef.doc(user.wallet_id).update({
+            ...walletdata,
+            amount: String(toupdateamount),
+            updatedAt: new Date().toISOString(),
+        });
+
+        transactionRef.add({
+            title: "Amount added.",
+            amount: amount,
+            description: `${amount} RS. added in wallet`,
+            type: "wallet",
+            action: "add",
+            user: user.id,
+            createdAt: new Date().toISOString(),
         });
 
         return res.json({
             id: wallet.id,
-            ...(await wallet.get()).data(),
+            ...(await walletRef.doc(user.wallet_id).get()).data(),
+        });
+    } catch (error) {
+        res.status(500).send({
+            message: error.message,
+            error: error.code
+        });
+    }
+});
+
+//delete wallet by id
+router.delete("/:id", async (req, res) => {
+    try {
+        const wallet = await walletRef.doc(req.params.id).get()
+        if (!wallet.exists) {
+            return res.status(404).send({
+                message: "Wallet does not exist",
+            });
+        }
+        await walletRef.doc(req.params.id).delete();
+        res.json({
+            message: "Wallet deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).send({
+            message: error.message,
+            error: error.code
+        });
+    }
+});
+
+// withdrawing amount from wallet
+router.post("/withdraw",getAuthUser, async (req, res) => {
+    const {  amount } = req.body;
+    try {
+        const user = req.user;
+        if(isNaN(amount)){
+            return res.status(400).send({
+                message: "amount must be a number",
+            });
+        }
+        if(Number(amount) <= 0){
+            return res.status(400).send({
+                message: "amount must be a positive number",
+            });
+        }
+    
+        const wallet = await walletRef.doc(user.wallet_id).get();
+        const walletdata = wallet.data();
+
+        const toupdateamount = Number(walletdata.amount) - Number(amount);
+        if(toupdateamount < 0){
+            return res.status(400).send({
+                message: "You don't have enough amount in your wallet",
+            });
+        }
+
+        await walletRef.doc(user.wallet_id).update({
+            ...walletdata,
+            amount: String(toupdateamount),
+            updatedAt: new Date().toISOString(),
+        });
+
+        transactionRef.add({
+            title: "Amount debited from wallet",
+            amount: amount,
+            description: `${amount} RS. debited from wallet`,
+            type: "wallet",
+            action: "withdraw",
+            user: user.id,
+            createdAt: new Date().toISOString(),
+        });
+
+        return res.json({
+            id: wallet.id,
+            ...(await walletRef.doc(user.wallet_id).get()).data(),
         });
     } catch (error) {
         res.status(500).send({

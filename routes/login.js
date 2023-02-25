@@ -40,11 +40,8 @@ router.post("/", async (req, res) => {
       });
     }
 
-
-
     snapshot.forEach((doc) => {
       const user = doc.data();
-      console.log(user);
       const passwordIsValid = bcrypt.compareSync(
         req.body.password,
         user.password
@@ -62,7 +59,8 @@ router.post("/", async (req, res) => {
         //Generate token
         const token = jwt.sign(
           {
-            id: user.userId,
+            id: doc.id,
+            userid: user.userId,
             email: user.email,
             username: user.username,
           },
@@ -140,7 +138,6 @@ router.post("/logout", async (req, res) => {
 
 // code to login with OTP and send OTP to user email and login user with token and cookie
 router.post("/otp", async (req, res) => {
-  // console.log(req.body);
   var otp = Math.floor(100000 + Math.random() * 900000);
 
   var html = `
@@ -177,10 +174,6 @@ router.post("/otp", async (req, res) => {
           .update({
             otp: otp,
           })
-          // if otp added then console log otp added
-          .then(() => {
-            console.log("OTP added");
-          });
       });
 
       res.status(200).send({
@@ -200,7 +193,6 @@ router.post("/otp", async (req, res) => {
 // code to login user by getting otp from email id  and match the fetched otp with the input otp and login user with token and cookie
 router.post("/otplogin", async (req, res) => {
   // code to get profile of user by email id
-  console.log(req.body);
   try {
     const userRef = db.collection("users");
     const snapshot = await userRef.where("email", "==", req.body.email).get();
@@ -214,7 +206,6 @@ router.post("/otplogin", async (req, res) => {
 
       // code to check if otp is valid or not
       if (req.body.otp == user.otp) {
-        console.log("otp matched");
 
         //Generate token
         const token = jwt.sign(
@@ -253,12 +244,7 @@ router.post("/otplogin", async (req, res) => {
           .update({
             otp: "",
           })
-          // if otp cleared then console log otp cleared
-          .then(() => {
-            console.log("OTP cleared");
-          });
       } else {
-        console.log("otp not matched");
         res.status(400).send({
           message: "Invalid OTP",
         });
