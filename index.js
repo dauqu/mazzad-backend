@@ -101,6 +101,7 @@ app.use("/api/v1/logs", require("./routes/logs"));
 app.use("/api/v1/notification", require("./routes/notifications"));
 app.use("/api/v1/transactions", require("./routes/transactions"));
 app.use("/api/v1/sms", require("./routes/sms"));
+app.use("/api/v1/favorites", require("./routes/favorites"));
 app.use("/api/v1/wallet", require("./routes/wallets"));
 
 app.listen(PORT, () => {

@@ -154,7 +154,7 @@ router.get("/my-auctions", async (req, res) => {
 
         auctionSnap
             .forEach(async (doc) => {
-                const product = await productsCollection
+                const product = await productCollection
                     .doc(doc.data().items).get();
                 let auction = {
                     id: doc.id,

@@ -31,13 +31,16 @@ router.get("/", async (req, res) => {
 });
 
 //Get a wallet by id
-router.get("/my",getAuthUser, async (req, res) => {
+router.get("/my", getAuthUser, async (req, res) => {
+    const { transactionLimit } = req.query;
+
     try {
         const user = req.user;
-        
+
         const wallet = await walletRef.doc(user.wallet_id).get();
         let transaction = transactionRef.where("user", "==", user.id);
         transaction = await transaction.where("type", "==", "wallet").get()
+        
 
         let transactions = [];
         transaction.forEach((doc) => {
@@ -52,12 +55,17 @@ router.get("/my",getAuthUser, async (req, res) => {
             return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
+        // limit transaction
+        if (transactionLimit) {
+            transactions = transactions.slice(0, transactionLimit);
+        }
+
         return res.json({
             wallet: {
                 id: wallet.id,
                 ...wallet.data(),
             },
-            user : user,
+            user: user,
             transactions: transactions,
         });
     } catch (error) {
@@ -69,22 +77,22 @@ router.get("/my",getAuthUser, async (req, res) => {
 });
 
 // add amount to wallet
-router.post("/add",getAuthUser, async (req, res) => {
-    
-    const {  amount } = req.body;
+router.post("/add", getAuthUser, async (req, res) => {
+
+    const { amount } = req.body;
     try {
         const user = req.user;
-        if(isNaN(amount)){
+        if (isNaN(amount)) {
             return res.status(400).send({
                 message: "amount must be a number",
             });
         }
-        if(Number(amount) <= 0){
+        if (Number(amount) <= 0) {
             return res.status(400).send({
                 message: "amount must be a positive number",
             });
         }
-    
+
         const wallet = await walletRef.doc(user.wallet_id).get();
         const walletdata = wallet.data();
 
@@ -99,7 +107,7 @@ router.post("/add",getAuthUser, async (req, res) => {
         transactionRef.add({
             title: "Amount added.",
             amount: amount,
-            description: `${amount} RS. added in wallet`,
+            description: req.body.description || `${amount} RS. added in wallet`,
             type: "wallet",
             action: "add",
             user: user.id,
@@ -140,26 +148,26 @@ router.delete("/:id", async (req, res) => {
 });
 
 // withdrawing amount from wallet
-router.post("/withdraw",getAuthUser, async (req, res) => {
-    const {  amount } = req.body;
+router.post("/withdraw", getAuthUser, async (req, res) => {
+    const { amount } = req.body;
     try {
         const user = req.user;
-        if(isNaN(amount)){
+        if (isNaN(amount)) {
             return res.status(400).send({
                 message: "amount must be a number",
             });
         }
-        if(Number(amount) <= 0){
+        if (Number(amount) <= 0) {
             return res.status(400).send({
                 message: "amount must be a positive number",
             });
         }
-    
+
         const wallet = await walletRef.doc(user.wallet_id).get();
         const walletdata = wallet.data();
 
         const toupdateamount = Number(walletdata.amount) - Number(amount);
-        if(toupdateamount < 0){
+        if (toupdateamount < 0) {
             return res.status(400).send({
                 message: "You don't have enough amount in your wallet",
             });
@@ -193,6 +201,6 @@ router.post("/withdraw",getAuthUser, async (req, res) => {
     }
 });
 
-    
+
 
 module.exports = router;
