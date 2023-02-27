@@ -164,12 +164,12 @@ router.post("/otp", async (req, res) => {
         message: "User does not exist",
       });
     } else {
-      SendMail(req.body.email, subject, html);
       snapshot.forEach((doc) => {
         db.collection("users").doc(doc.id).update({
           otp: otp,
         });
       });
+      SendMail(req.body.email, subject, html);
       res.status(200).send({
         message: "OTP sent to your email",
         otp: otp,
