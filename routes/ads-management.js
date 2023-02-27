@@ -94,7 +94,6 @@ router.get("/my-ads", (req, res) => {
       return res.status(200).json(ads);
     })
     .catch((err) => {
-      console.log(err);
       return res.status(500).json({
         error: err.code,
       });
@@ -116,7 +115,6 @@ router.get("/:id", (req, res) => {
       return res.status(200).json(doc.data());
     })
     .catch((err) => {
-      console.log(err);
       return res.status(500).json({
         error: err.code,
       });
@@ -135,7 +133,6 @@ router.delete("/:id", (req, res) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       return res.status(500).json({
         error: err.code,
       });

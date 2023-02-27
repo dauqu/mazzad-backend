@@ -2,6 +2,7 @@ const router = require('express').Router();
 const admin = require('firebase-admin');
 const db = admin.firestore();
 const transactionRef = db.collection('transactions');
+const { getAuthUser } = require('../functions/getauth');
 
 // Get all transactions
 router.get('/', async (req, res) => {
@@ -18,15 +19,25 @@ router.get('/', async (req, res) => {
 });
 
 // Get a transaction
-router.get('/:id', async (req, res) => {
+router.get('/my', getAuthUser, async (req, res) => {
     try {
-        const id = req.params.id;
-        const doc = await transactionRef.doc(id).get();
-        if (!doc.exists) {
-            res.status(404).json({ error: 'Transaction not found' });
-        } else {
-            res.status(200).json({ id: doc.id, ...doc.data() });
-        }
+        const user = req.user;
+
+        const doc = await transactionRef
+            .where('user', '==', user.id)
+            .get();
+
+        let transactions = [];
+        doc.forEach(transaction => {
+            transactions.push({ id: transaction.id, ...transaction.data() });
+        });
+
+        transactions = transactions.sort((a, b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        return res.status(200).json({transactions});
+
     } catch (error) {
         res.status(500).json({ error: error.message });
 
@@ -34,14 +45,16 @@ router.get('/:id', async (req, res) => {
 });
 
 // Add a transaction
-router.post('/', async (req, res) => {
+router.post('/',getAuthUser, async (req, res) => {
     try {
+        const user = req.user;
         const doc = await transactionRef.add({
             title: req.body.title,
             amount: req.body.amount,
-            type: req.body.type,
             description: req.body.description,
-            user: req.body.user,
+            type: req.body.type || "wallet",
+            action: req.body.action || "add",
+            user: user.id,
             createdAt: new Date().toISOString()
         });
 

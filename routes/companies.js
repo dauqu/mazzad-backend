@@ -38,7 +38,6 @@ router.get("/my", async (req, res) => {
   const verified = VerifyToken(token);
 
   const username = verified.username;
-  console.log(username);
 
   //Get address by username
   const companies = await companiesCollection.get();

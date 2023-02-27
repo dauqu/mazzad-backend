@@ -16,7 +16,7 @@ async function SendMail(to, subject, html) {
 
   // code to generate 6 digit random number for otp
   let otp = Math.floor(100000 + Math.random() * 900000);
-  console.log(otp);
+  // console.log(otp);
   otp = otp.toString();
   // send mail with defined transport object
   let info = await transporter.sendMail({
@@ -29,7 +29,7 @@ async function SendMail(to, subject, html) {
     html: html, // html body
   });
 
-  console.log("Message sent: %s", info.messageId);
+  // console.log("Message sent: %s", info.messageId);
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 }
 

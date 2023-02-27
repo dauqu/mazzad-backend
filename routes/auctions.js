@@ -89,26 +89,28 @@ router.get("/", async (req, res) => {
         }
 
         const productPromises = auctionsSnapshot.docs.map(async (auctionDoc) => {
-            const productRef = db.collection("products").doc(auctionDoc.data().items);
-            const productDoc = await productRef.get();
-            const productData = productDoc.data();
-            const auctionData = auctionDoc.data();
+            try {
+                const productRef = db.collection("products").doc(auctionDoc.data().items)
+                const productDoc = await productRef.get();
 
-            resauctions.push({
-                id: auctionDoc.id,
-                ...auctionData,
-                items: {
-                    id: productDoc.id,
-                    // name: productData.name,
-                    // description: productData.description,
-                    // video_thumbnail: productData.video_thumbnail,
-                    // slug: productData.slug,
-                    // createdAt: productData.createdAt,
-                    // video: productData.video,
-                    // sku: productData.sku,
-                    ...productData
-                },
-            });
+                const productData = productDoc.data();
+                const auctionData = auctionDoc.data();
+
+                resauctions.push({
+                    id: auctionDoc.id,
+                    ...auctionData,
+                    items: {
+                        id: productDoc.id,
+                        ...productData
+                    },
+                });
+            } catch (error) {
+                resauctions.push({
+                    id: auctionDoc.id,
+                    ...auctionDoc.data(),
+                    items: {}
+                })
+            }
         });
 
         await Promise.all(productPromises);
@@ -152,7 +154,7 @@ router.get("/my-auctions", async (req, res) => {
 
         auctionSnap
             .forEach(async (doc) => {
-                const product = await productsCollection
+                const product = await productCollection
                     .doc(doc.data().items).get();
                 let auction = {
                     id: doc.id,
@@ -183,7 +185,7 @@ router.get("/:id", (req, res) => {
         .get()
         .then((doc) => {
             const productRef = db.collection("products").doc(doc.data().items);
-            console.log(doc.data().items[0]);
+            
             if (!doc.exists) {
                 return res.status(404).json({
                     error: "Auction not found",
@@ -237,7 +239,6 @@ router.put("/:id", (req, res) => {
             });
         })
         .catch((err) => {
-            console.log(err);
             return res.status(500).json({
                 error: err.code,
             });
@@ -256,7 +257,6 @@ router.delete("/:id", (req, res) => {
             });
         })
         .catch((err) => {
-            console.log(err);
             return res.status(500).json({
                 error: err.code,
             });
