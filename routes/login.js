@@ -1,3 +1,4 @@
+const { json } = require("express");
 const express = require("express");
 const router = express.Router();
 var admin = require("firebase-admin");
@@ -47,13 +48,11 @@ router.post("/", async (req, res) => {
         user.password
       );
 
-
-      if(user.status === "blacklist"){
+      if (user.status === "blacklist") {
         return res.status(400).send({
           message: "You are blocked",
         });
       }
-
 
       if (passwordIsValid) {
         //Generate token
@@ -139,7 +138,7 @@ router.post("/logout", async (req, res) => {
 // code to login with OTP and send OTP to user email and login user with token and cookie
 router.post("/otp", async (req, res) => {
   var otp = Math.floor(100000 + Math.random() * 900000);
-
+  // console.log(otp);
   var html = `
     <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
     <div style="margin:50px auto;width:70%;padding:20px 0">
@@ -154,34 +153,27 @@ router.post("/otp", async (req, res) => {
 
     </div>
   </div>`;
-
   var subject = "OTP for Login";
 
   try {
+    // code to send otp to user email and save otp in database and if user logged in then clear otp from database
     const userRef = db.collection("users");
     const snapshot = await userRef.where("email", "==", req.body.email).get();
-
     if (snapshot.empty) {
       res.status(400).send({
         message: "User does not exist",
       });
     } else {
-      // code to add otp to user profile
+      SendMail(req.body.email, subject, html);
       snapshot.forEach((doc) => {
-        const user = doc.data();
-        const userRef = db.collection("users").doc(user.userId);
-        userRef
-          .update({
-            otp: otp,
-          })
+        db.collection("users").doc(doc.id).update({
+          otp: otp,
+        });
       });
-
       res.status(200).send({
         message: "OTP sent to your email",
         otp: otp,
       });
-
-      SendMail(req.body.email, subject, html);
     }
   } catch (error) {
     res.status(400).send({
@@ -192,7 +184,9 @@ router.post("/otp", async (req, res) => {
 
 // code to login user by getting otp from email id  and match the fetched otp with the input otp and login user with token and cookie
 router.post("/otplogin", async (req, res) => {
-  // code to get profile of user by email id
+  console.log("req:" + req.body.otp);
+
+  // code to login by fetching otp from database and match with input otp and login user with token and cookie
   try {
     const userRef = db.collection("users");
     const snapshot = await userRef.where("email", "==", req.body.email).get();
@@ -200,56 +194,48 @@ router.post("/otplogin", async (req, res) => {
       res.status(400).send({
         message: "User does not exist",
       });
+    } else {
+      snapshot.forEach((doc) => {
+        const user = doc.data();
+        console.log("USer OTP:" + user.otp);
+        if (user.otp == req.body.otp) {
+          // console.log("otp matched");
+          //Generate token
+          const token = jwt.sign(
+            {
+              id: user.userId,
+              email: user.email,
+              username: user.username,
+            },
+            process.env.JWT_SECRET,
+            {
+              //Expire in a year
+              expiresIn: 31556926,
+            }
+          );
+
+          res.cookie("token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+          });
+
+          //Set header
+
+          res.header("x-access-token", token);
+
+          res.status(200).send({
+            message: "User logged in successfully",
+            token: token,
+          });
+        } else {
+          console.log("otp not matched");
+          res.status(400).send({
+            message: "Invalid OTP",
+          });
+        }
+      });
     }
-    snapshot.forEach((doc) => {
-      const user = doc.data();
-
-      // code to check if otp is valid or not
-      if (req.body.otp == user.otp) {
-
-        //Generate token
-        const token = jwt.sign(
-          {
-            id: user.userId,
-            email: user.email,
-            username: user.username,
-          },
-          process.env.JWT_SECRET,
-          {
-            //Expire in a year
-            expiresIn: 31556926,
-          }
-        );
-
-        //Set token in cookie
-        res.cookie("token", token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        });
-
-        //Set header
-
-        res.header("x-access-token", token);
-
-        res.status(200).send({
-          message: "User logged in successfully",
-          token: token,
-        });
-
-        // code to clear otp from user profile
-        const userRef = db.collection("users").doc(user.userId);
-        userRef
-
-          .update({
-            otp: "",
-          })
-      } else {
-        res.status(400).send({
-          message: "Invalid OTP",
-        });
-      }
-    });
   } catch (error) {
     res.status(400).send({
       message: error.message,

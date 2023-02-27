@@ -4,55 +4,52 @@ const admin = require("firebase-admin");
 const bcrypt = require("bcryptjs");
 const db = admin.firestore();
 
-
-
 router.post("/", Middleware, async (req, res) => {
   try {
-  const usersCollection = db.collection("users");
-  const walletCollection = db.collection("wallet");
+    const usersCollection = db.collection("users");
+    const walletCollection = db.collection("wallet");
 
-  //Generate random user id
-  const userId =
-  Math.random().toString(36).substring(2, 15) +
-  Math.random().toString(36).substring(2, 15);
-  
-  //Hash password
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
-  // create new wallet 
-  let wallet = await walletCollection.add({
-    userId: userId,
-    amount: 0,
-    createdAt: new Date().toISOString(),
-  });
-  
-  //Insert a new document into the collection
-  let addedUser = await usersCollection.add({
-    ...req.body,
-    fullName: req.body.fullName,
-    username: req.body.username,
-    email: req.body.email,
-    password: hashedPassword,
-    userId: userId,
-    role: "user",
-    status: "active",
-    createdAt: new Date().toISOString(),
-    wallet_id: wallet.id,
-  });
+    //Generate random user id
+    const userId =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
-  //Send response
-  res.status(200).json({
-    message: "User registered successfully",
-    user: {
-      id: addedUser.id,
-      ...(await addedUser.get()).data(),
-    }
-  });
-} catch (error) {
- return res.status(500).json({
-    message: "User registered successfully",
-  });
+    //Hash password
+    const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+    // create new wallet
+    let wallet = await walletCollection.add({
+      userId: userId,
+      amount: 0,
+      createdAt: new Date().toISOString(),
+    });
 
-}
+    //Insert a new document into the collection
+    let addedUser = await usersCollection.add({
+      ...req.body,
+      fullName: req.body.fullName,
+      username: req.body.username,
+      email: req.body.email,
+      password: hashedPassword,
+      userId: userId,
+      role: "user",
+      status: "active",
+      createdAt: new Date().toISOString(),
+      wallet_id: wallet.id,
+    });
+
+    //Send response
+    res.status(200).json({
+      message: "User registered successfully",
+      user: {
+        id: addedUser.id,
+        ...(await addedUser.get()).data(),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "User registered successfully",
+    });
+  }
 });
 
 async function Middleware(req, res, next) {
