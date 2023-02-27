@@ -103,6 +103,7 @@ app.use("/api/v1/transactions", require("./routes/transactions"));
 app.use("/api/v1/sms", require("./routes/sms"));
 app.use("/api/v1/favorites", require("./routes/favorites"));
 app.use("/api/v1/wallet", require("./routes/wallets"));
+app.use("/api/v1/offers", require("./routes/offers"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);

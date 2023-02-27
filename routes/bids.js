@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
+const SendMail = require("../functions/smtp");
 
 const VerifyToken = require("../functions/verify-token");
 
@@ -8,6 +9,25 @@ const db = admin.firestore();
 const bidsCollection = db.collection("bids");
 
 router.post("/", (req, res) => {
+  var subject = "New Bid on your auction";
+  // code for bid notification email template
+  var html = `<div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+  <div style="margin:50px auto;width:70%;padding:20px 0">
+    <div style="border-bottom:1px solid #eee">
+      <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">123 AUC</a>
+    </div>
+    <p style="font-size:1.1em">Hi, ${req.body.username} </p>
+    <p>There is a new bid on your Auction_id (${req.body.auctionId}) . The amount of bid is (${req.body.amount})</p>
+    <p>This bid is created   ${req.body.createdAt}</p>
+    <p>We are wishing you good luck for this . </p>
+    <p style="font-size:0.9em;">Regards,<br />123 AUC</p>
+    <hr style="border:none;border-top:1px solid #eee" />
+
+  </div>
+</div>`;
+  var email = "info@dauqu.com";
+  //Send email
+  SendMail(email, subject, html);
   //Get token from header
   const token =
     req.body.token || req.cookies.token || req.headers["x-access-token"];
@@ -23,7 +43,7 @@ router.post("/", (req, res) => {
   const verified = VerifyToken(token);
 
   const username = verified.username;
-  if(!username || username == ""){
+  if (!username || username == "") {
     res.status(401).send({
       message: "No token provided",
     });
@@ -76,12 +96,14 @@ router.get("/auction/:id", async (req, res) => {
   try {
     const db = admin.firestore();
     const bidsCollection = db.collection("bids");
-    const bids = await bidsCollection.where("auctionId", "==", req.params.id).get();
+    const bids = await bidsCollection
+      .where("auctionId", "==", req.params.id)
+      .get();
 
     const bidsArray = [];
     let highest_bid = 0;
     bids.forEach((doc) => {
-      if(Number(doc.data().amount) > Number(highest_bid)){
+      if (Number(doc.data().amount) > Number(highest_bid)) {
         highest_bid = Number(doc.data().amount);
       }
       bidsArray.push({
@@ -91,7 +113,7 @@ router.get("/auction/:id", async (req, res) => {
     });
     res.status(200).json({
       bids: bidsArray,
-      highest_bid: highest_bid
+      highest_bid: highest_bid,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
