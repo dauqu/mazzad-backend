@@ -23,10 +23,9 @@ async function SendMail(to, subject, html) {
     from: '"Fred Foo 👻" <test@a.setkaro.com>', // sender address
     to: to, // list of receivers
     subject: subject, // Subject line
+    html: html,
     // code to generate random number for otp and send it to user email
     // text: otp,
-
-    html: html, // html body
   });
 
   // console.log("Message sent: %s", info.messageId);

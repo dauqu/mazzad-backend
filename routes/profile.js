@@ -40,4 +40,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// code to get profile of specific user by id
+router.get("/:id", async (req, res) => {
+  try {
+    const doc = await profileCollection.doc(req.params.id).get();
+    if (!doc.exists) {
+      res.status(404).send({
+        message: "Profile not found",
+      });
+    } else {
+      res.json({
+        id: doc.id,
+        ...doc.data(),
+      });
+    }
+  } catch (error) {
+    res.json({
+      message: "Profile not found",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
