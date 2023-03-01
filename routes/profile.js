@@ -36,7 +36,10 @@ router.get("/", async (req, res) => {
       });
     });
   } catch (error) {
-    res.send(error);
+    res.json({
+      message: "Profile not found",
+      error: error.message,
+    });
   }
 });
 
