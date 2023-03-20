@@ -11,6 +11,7 @@ app.use(cookieParser());
 const cors = require("cors");
 //Loop of allowed origins
 const allowedOrigins = [
+  "http://localhost:57814",
   "https://mazzad-admin-k1le.vercel.app",
   "http://localhost:3000",
   "https://companyadminpanel.vercel.app",
@@ -106,6 +107,7 @@ app.use("/api/v1/favorites", require("./routes/favorites"));
 app.use("/api/v1/wallet", require("./routes/wallets"));
 app.use("/api/v1/offers", require("./routes/offers"));
 app.use("/api/v1/jobs", require("./routes/jobs_post"));
+app.use("/api/v1/stripe", require("./routes/stripe"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port http://localhost:${PORT}`);
