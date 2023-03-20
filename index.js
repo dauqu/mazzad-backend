@@ -37,6 +37,7 @@ const { fire_auth } = require("./config/firebase");
 var admin = require("firebase-admin");
 // const SendMail = require("./functions/smtp");
 
+// data base initialization and connection
 admin.initializeApp({
   credential: admin.credential.cert(fire_auth),
 });
@@ -70,7 +71,6 @@ app.get("/files", async (req, res) => {
 //Get all files
 app.get("/", async (req, res) => {
   // SendMail().catch(console.error);
-
   res.send("Hello World");
 });
 
