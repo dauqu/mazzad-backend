@@ -16,6 +16,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://companyadminpanel.vercel.app",
   "https://mazzad-admin-y5al4g.dauqu.host",
+  "https://pharmacy-hjmr.vercel.app"
 ];
 
 app.use(
